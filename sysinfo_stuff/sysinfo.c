@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/vfs.h>
+#include <errno.h>
 
 #define KB_TO_GB (1048576)
 #define MAX_INT_SIZE (20)
@@ -145,25 +147,61 @@ void get_hardware_info() {
 } /* get_hardware_info() */
 
 void get_disk_info() {
-// mounts
+  FILE * fp = fopen("/proc/mounts", "r");
+  if (fp == NULL) {
+    perror("couldn't read /proc/mounts");
+    exit(EXIT_FAILURE);
+  }
+
+  char * line = NULL;
+  size_t len = 0;
+  ssize_t read_len = 0;
+  char * mount_name = NULL;
+  ssize_t total_size = 0;
+  struct statfs fs_stats = { 0 };
+  while ((read_len = getline(&line, &len, fp)) != -1) {
+    char * first_space = strchr(line, ' ');
+    char * second_space = strchr(first_space + 1, ' ');
+    mount_name = strndup(first_space + 1, second_space - first_space - 1);
+    if (statfs(mount_name, &fs_stats) == -1) {
+      printf("%d\n", errno);
+      perror("statfs");
+      exit(EXIT_FAILURE);
+    }
+
+    //total_size += fs_stats.f_bfree;
+    total_size += fs_stats.f_bavail;
+    // ^^ gave the right size of 162gb that ``df -h --total`` gave, so I think this is right.
+    free(mount_name);
+    mount_name = NULL;
+  }
+
+  total_size *= 4; // converts from blocks to kb
+  g_sys_info.disk_space = malloc(sizeof(char) * MAX_INT_SIZE);
+  sprintf(g_sys_info.disk_space, "%li", total_size);
+  free(line);
+  line = NULL;
+  fclose(fp);
+  fp = NULL;
 } /* get_disk_info() */
 
 void main() {
   get_release_info();
   get_hardware_info();
-  //get_disk_info();
+  get_disk_info();
 
   printf("---------- RELEASE ----------\n");
   printf("%s\n", g_sys_info.release_name);
-  printf("%s\n", g_sys_info.release_version);
-  printf("%s\n", g_sys_info.kernel_version);
+  printf("Release %s\n", g_sys_info.release_version);
+  printf("Kernel %s\n", g_sys_info.kernel_version);
 
   printf("---------- HARDWARE ----------\n");
-  printf("%s\n", g_sys_info.ram_size);
-  printf("%s\b", g_sys_info.cpu_info);
+  printf("Memory: %s kB\n", g_sys_info.ram_size);
+  printf("Processor: %s\b", g_sys_info.cpu_info);
 
   printf("---------- DISK ----------\n");
-  //printf("%s\n", g_sys_info.disk_space);
+  printf("Available Disk Space: %s kB\n", g_sys_info.disk_space);
+
   free(g_sys_info.release_name);
   g_sys_info.release_name = NULL;
   free(g_sys_info.release_version);
@@ -174,8 +212,6 @@ void main() {
   g_sys_info.ram_size = NULL;
   free(g_sys_info.cpu_info);
   g_sys_info.cpu_info = NULL;
-  /*
   free(g_sys_info.disk_space);
   g_sys_info.disk_space = NULL;
-  */
 } /* main() */
