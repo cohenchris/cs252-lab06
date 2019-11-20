@@ -1,0 +1,13 @@
+UBUNTU
+Release 18.04.3 LTS (Bionic Beaver)
+Kernel 4.15.0-66.75-generic 4.15.18
+Desktop Environment i3
+
+
+HARDWARE
+Memory: 15.40 GB
+Processor: Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz x 4
+
+
+SYSTEM STATUS
+Available Disk Space: 162G
