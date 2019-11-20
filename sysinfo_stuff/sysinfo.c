@@ -164,9 +164,12 @@ void get_disk_info() {
     char * second_space = strchr(first_space + 1, ' ');
     mount_name = strndup(first_space + 1, second_space - first_space - 1);
     if (statfs(mount_name, &fs_stats) == -1) {
+      continue;
+      /*
       printf("%d\n", errno);
       perror("statfs");
       exit(EXIT_FAILURE);
+      */
     }
 
     //total_size += fs_stats.f_bfree;
