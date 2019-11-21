@@ -1,9 +1,25 @@
 #include <gtk/gtk.h>
 
-void toggle_status(GtkWidget *widget, gpointer status) {
+void toggle_active(GtkWidget *widget, gpointer status) {
   if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM (widget))) {
-    printf("HELLO WORLD\n");
+    printf("ACTIVE PROCESSES\n");
   }
+}
+
+void toggle_all(GtkWidget *widget, gpointer status) {
+  if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM (widget))) {
+    printf("ALL PROCESSES\n");
+  }
+}
+
+void toggle_my(GtkWidget *widget, gpointer status) {
+  if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM (widget))) {
+    printf("MY PROCESSES\n");
+  }
+}
+
+void toggle_refresh(GtkWidget *widget, gpointer status) {
+  printf("REFRESH\n");
 }
 
 static void activate(GtkApplication *app, gpointer user_data) {
@@ -25,6 +41,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
   GtkWidget *tog_stat_active;
   GtkWidget *tog_stat_all;
   GtkWidget *tog_stat_my;
+  GtkWidget *refresh;
+  GtkWidget *separator;
 
   // create new window
   window = gtk_application_window_new(app);
@@ -60,42 +78,66 @@ static void activate(GtkApplication *app, gpointer user_data) {
   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (tog_stat_active), FALSE);
   gtk_menu_shell_append(GTK_MENU_SHELL (subMenu), tog_stat_active);
 
+  // Active Processes signal handler
   g_signal_connect(G_OBJECT (tog_stat_active), "activate",
-      G_CALLBACK(toggle_status), NULL);
+      G_CALLBACK(toggle_active), NULL);
 
   tog_stat_all = gtk_radio_menu_item_new_with_label_from_widget(
       GTK_RADIO_MENU_ITEM (radio_group), "All Processes"); 
   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (tog_stat_all), FALSE);
   gtk_menu_shell_append(GTK_MENU_SHELL (subMenu), tog_stat_all);
   
+  // All Processes signal handler
   g_signal_connect(G_OBJECT (tog_stat_all), "activate",
-      G_CALLBACK(toggle_status), NULL);
+      G_CALLBACK(toggle_all), NULL);
 
   tog_stat_my = gtk_radio_menu_item_new_with_label_from_widget(
       GTK_RADIO_MENU_ITEM (radio_group), "My Processes");
   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (tog_stat_my), FALSE);
   gtk_menu_shell_append(GTK_MENU_SHELL (subMenu), tog_stat_my);
-  
+ 
+  // My Processes signal handler
   g_signal_connect(G_OBJECT (tog_stat_my), "activate",
-      G_CALLBACK(toggle_status), NULL);
+      G_CALLBACK(toggle_my), NULL);
 
+  // Add separator
+  separator = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (subMenu), separator);
 
-  // Add remaining menu items
-
+  // Add remaining submenu items
   subItem = gtk_check_menu_item_new_with_label("Dependencies");
   gtk_menu_shell_append(GTK_MENU_SHELL(subMenu), subItem);
   
+  // Add separator
+  separator = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (subMenu), separator);
+ 
   subItem = gtk_menu_item_new_with_label("Memory Maps");
+  gtk_widget_set_sensitive(subItem, FALSE);
   gtk_menu_shell_append(GTK_MENU_SHELL(subMenu), subItem);
   
   subItem = gtk_menu_item_new_with_label("Open Files");
+  gtk_widget_set_sensitive(subItem, FALSE);
   gtk_menu_shell_append(GTK_MENU_SHELL(subMenu), subItem);
+  
+   // Add separator
+  separator = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (subMenu), separator);
   
   subItem = gtk_menu_item_new_with_label("Properties");
+  gtk_widget_set_sensitive(subItem, FALSE);
   gtk_menu_shell_append(GTK_MENU_SHELL(subMenu), subItem);
+
+  // Add separator
+  separator = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (subMenu), separator);
   
-  subItem = gtk_menu_item_new_with_label("Refresh");
-  gtk_menu_shell_append(GTK_MENU_SHELL(subMenu), subItem);
+  refresh = gtk_menu_item_new_with_label("Refresh");
+  gtk_menu_shell_append(GTK_MENU_SHELL(subMenu), refresh);
+
+  // Refresh signal handler
+  g_signal_connect(G_OBJECT (refresh), "activate", G_CALLBACK(toggle_refresh),
+      NULL);
 
   // Add remaining menu items
   menuItem = gtk_menu_item_new_with_label("Help");
