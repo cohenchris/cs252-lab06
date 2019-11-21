@@ -1,2 +1,2 @@
-sysinfo: sysinfo.c
-	gcc -o sysinfo sysinfo.c
+sysinfo: sysinfo.c procinfo.c
+	gcc -o taskmanager sysinfo.c procinfo.c main.c

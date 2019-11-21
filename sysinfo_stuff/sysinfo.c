@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/vfs.h>
-#include <errno.h>
 
 #define KB_TO_GB (1048576)
 #define MAX_INT_SIZE (20)
@@ -194,34 +193,3 @@ system_info get_system_info() {
   get_disk_info();
   return g_sys_info;
 } /* get_system_info() */
-
-void main() {
-  get_release_info();
-  get_hardware_info();
-  get_disk_info();
-
-  printf("---------- RELEASE ----------\n");
-  printf("%s\n", g_sys_info.release_name);
-  printf("Release %s\n", g_sys_info.release_version);
-  printf("Kernel %s\n", g_sys_info.kernel_version);
-
-  printf("---------- HARDWARE ----------\n");
-  printf("Memory: %s kB\n", g_sys_info.ram_size);
-  printf("Processor: %s\b", g_sys_info.cpu_info);
-
-  printf("---------- DISK ----------\n");
-  printf("Available Disk Space: %s kB\n", g_sys_info.disk_space);
-
-  free(g_sys_info.release_name);
-  g_sys_info.release_name = NULL;
-  free(g_sys_info.release_version);
-  g_sys_info.release_version = NULL;
-  free(g_sys_info.kernel_version);
-  g_sys_info.kernel_version = NULL;
-  free(g_sys_info.ram_size);
-  g_sys_info.ram_size = NULL;
-  free(g_sys_info.cpu_info);
-  g_sys_info.cpu_info = NULL;
-  free(g_sys_info.disk_space);
-  g_sys_info.disk_space = NULL;
-} /* main() */
