@@ -1,10 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void get_release_info();
-void get_hardware_info();
-void get_disk_info();
-
 typedef struct {
   /* release information */
   char * release_name;
@@ -18,3 +14,8 @@ typedef struct {
   /* disk space */
   char * disk_space;
 } system_info;
+
+void get_release_info();
+void get_hardware_info();
+void get_disk_info();
+system_info get_system_info();
