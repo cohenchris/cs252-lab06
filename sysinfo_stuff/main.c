@@ -17,11 +17,11 @@ void main() {
   printf("Release %s\n", curr_sys_info.release_version);
   printf("Kernel %s\n", curr_sys_info.kernel_version);
 
-  printf("---------- HARDWARE ----------\n");
+  printf("\n---------- HARDWARE ----------\n");
   printf("Memory: %s kB\n", curr_sys_info.ram_size);
   printf("Processor: %s\b", curr_sys_info.cpu_info);
 
-  printf("---------- DISK ----------\n");
+  printf("\n---------- DISK ----------\n");
   printf("Available Disk Space: %s kB\n", curr_sys_info.disk_space);
 
   printf("\n\n");

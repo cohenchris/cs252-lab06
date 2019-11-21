@@ -59,7 +59,8 @@ void get_release_info() {
   }
 
   if ((read_len = getline(&line, &len, fp)) != -1) {
-    g_sys_info.kernel_version = strdup(strstr(line, " ") + 1);
+    g_sys_info.kernel_version = strndup(strstr(line, " ") + 1,
+        strlen(strstr(line, " ") + 1) - 1);
   }
   else {
     perror("couldn't read /proc/version_signature");
