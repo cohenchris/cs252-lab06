@@ -1,6 +1,8 @@
 #include "procinfo.h"
 
 #include <stdio.h>
+#include <sys/types.h>
+#include <pwd.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <stdlib.h>
@@ -64,11 +66,50 @@ process_info * get_proc_info() {
 
           process_info new_proc = { 0 };
           new_proc.proc_name = strdup(line);
+
           new_proc.proc_id = curr_proc_id;
-          //new_proc.proc_user = strdup("cohen50");
+
+          /* Extract UID from /proc/[proc_id]/status */
+          char * status_path = strdup(proc_dir_path);
+          char * status = "/status";
+          status_path = realloc(status_path, sizeof(char) *
+                                            (strlen(status_path) +
+                                             strlen(status) + 1));
+          strcat(status_path, status);
+
+          FILE * status_file = fopen(status_path, "r");
+          if (status_file == NULL) {
+            perror("fopen");
+            exit(EXIT_FAILURE);
+          }
+
+          char * first_tab = NULL;
+          char * second_tab = NULL;
+          char * uid = NULL;
+          while ((read_len = getline(&line, &len, status_file)) != -1) {
+            if (strstr(line, "Uid:") != NULL) {
+              first_tab = strchr(line, '\t');
+              second_tab = strchr(first_tab + 1, '\t');
+              uid = strndup(first_tab + 1, second_tab - first_tab - 1);
+              break;
+            }
+          }
+          struct passwd * pws_struct = { 0 };
+          uid_t uid_num = 0;
+          sscanf(uid, "%u", &uid_num);
+
+          pws_struct = getpwuid(uid_num);
+          new_proc.proc_user = strdup(pws_struct->pw_name);
 
           g_proc_info[g_num_procs] = new_proc;
           g_num_procs++;
+
+          free(uid);
+          uid = NULL;
+          free(status_path);
+          status_path = NULL;
+          fclose(status_file);
+          status_file = NULL;
         }
       }
       free(line);

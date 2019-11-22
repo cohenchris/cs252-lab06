@@ -34,9 +34,12 @@ void main() {
 
   process_info * curr_proc_info = get_proc_info();
   //while (curr_proc_info[num_procs].proc_name != NULL) {
+  printf("%-9s|%-9s|%-9s\n", "proc_id", "proc_user", "proc_name");
+  printf("%s\n", "------------------------------");
   for (int i = 0; i < g_num_procs; i++) {
-    printf("%zu\t-\t%s\n", curr_proc_info[i].proc_id,
-                           curr_proc_info[i].proc_name);
+    printf("%-10zu%-10s%s\n", curr_proc_info[i].proc_id,
+                                        curr_proc_info[i].proc_user,
+                                        curr_proc_info[i].proc_name);
   }
 
   /* ------------------------------ FREEING ------------------------------ */
@@ -57,7 +60,7 @@ void main() {
   for (int i = 0; i < g_num_procs; i++) {
     free(curr_proc_info[i].proc_name);
     curr_proc_info[i].proc_name = NULL;
-    //free(curr_proc_info[i].proc_user);
-    //curr_proc_info[i].proc_user = NULL;
+    free(curr_proc_info[i].proc_user);
+    curr_proc_info[i].proc_user = NULL;
   }
 } /* main() */
