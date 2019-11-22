@@ -38,6 +38,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
   GtkWidget *subItem;
   GtkWidget *label;
   GtkWidget *vbox;
+  GtkWidget *grid;
+  GtkWidget *text;
 
   GtkWidget *radio_group;
   GtkWidget *radio_button;
@@ -165,11 +167,24 @@ static void activate(GtkApplication *app, gpointer user_data) {
   gtk_notebook_set_tab_pos(GTK_NOTEBOOK (notebook), GTK_POS_TOP);
 
   // create System frame and label
-  frame = gtk_frame_new(NULL);
+  //frame = gtk_frame_new(NULL);
+  grid = gtk_grid_new();
+
+  // add system info
+  char sys_info[200000];
+  sprintf(sys_info, "%s\n\t%s\n\t%s\n\nHardware\n\tMemory: %sKB \
+      \n\tProcessor: %s\nSystem Status\n\tAvailable disk space: %s",
+      g_sys_info_struct.release_name, g_sys_info_struct.release_version,
+      g_sys_info_struct.kernel_version, g_sys_info_struct.ram_size,
+      g_sys_info_struct.cpu_info, g_sys_info_struct.disk_space); 
+
+  text = gtk_label_new(sys_info);
+  gtk_grid_attach(GTK_GRID (grid), text, 0, 0, 1, 1);
+
   label = gtk_label_new("System");
 
   // add page
-  gtk_notebook_append_page(GTK_NOTEBOOK (notebook), frame, label);
+  gtk_notebook_append_page(GTK_NOTEBOOK (notebook), grid, label);
 
   // create Processes frame and label
   frame = gtk_frame_new(NULL);
@@ -200,8 +215,6 @@ int main(int argc, char **argv) {
   int status;
 
   g_sys_info_struct = get_system_info();
-
-  fprintf(stdout, "%s", g_sys_info_struct.release_name);
 
   app = gtk_application_new("org.gtk.example", G_APPLICATION_FLAGS_NONE);
   g_signal_connect(app, "activate", G_CALLBACK (activate), NULL);
