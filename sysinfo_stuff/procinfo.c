@@ -27,12 +27,12 @@ process_info * get_proc_info() {
     strcat(proc_dir_path, "/");
     strcat(proc_dir_path, dir_entry->d_name);
 
-    DIR * proc_dir = opendir(dir_entry->d_name);
+    DIR * proc_dir = opendir(proc_dir_path);
     if (proc_dir == NULL) {
       continue;
     }
 
-    if ((dir_entry = readdir(proc_dir)) != NULL) {
+    while ((dir_entry = readdir(proc_dir)) != NULL) {
       printf("d_name = %s\n", dir_entry->d_name);
     }
     printf("\n\n\n");
