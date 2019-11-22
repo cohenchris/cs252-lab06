@@ -6,6 +6,8 @@
 #include "sysinfo.h"
 #include "procinfo.h"
 
+extern int g_num_procs;
+
 void main() {
   printf("#################################################################\n");
   printf("#                        SYSTEM INFO                            #\n");
@@ -29,11 +31,12 @@ void main() {
   printf("#################################################################\n");
   printf("#                        PROCESS INFO                           #\n");
   printf("#################################################################\n");
-  process_info * curr_proc_info = get_proc_info();
 
-  int num_processes = sizeof(curr_proc_info) / sizeof(curr_proc_info[0]);
-  for (int i = 0; i < num_processes; i++) {
-    printf("%lu - %s\n", curr_proc_info[i].proc_id, curr_proc_info[i].proc_name);
+  process_info * curr_proc_info = get_proc_info();
+  //while (curr_proc_info[num_procs].proc_name != NULL) {
+  for (int i = 0; i < g_num_procs; i++) {
+    printf("%zu\t-\t%s\n", curr_proc_info[i].proc_id,
+                           curr_proc_info[i].proc_name);
   }
 
   /* ------------------------------ FREEING ------------------------------ */
@@ -51,12 +54,10 @@ void main() {
   free(curr_sys_info.disk_space);
   curr_sys_info.disk_space = NULL;
 
-  for (int i = 0; i < num_processes; i++) {
-    /*
-    free(curr_proc_info[i].proc_id);
-    curr_proc_info[i].proc_id = NULL;
-    */
+  for (int i = 0; i < g_num_procs; i++) {
     free(curr_proc_info[i].proc_name);
     curr_proc_info[i].proc_name = NULL;
+    //free(curr_proc_info[i].proc_user);
+    //curr_proc_info[i].proc_user = NULL;
   }
 } /* main() */
