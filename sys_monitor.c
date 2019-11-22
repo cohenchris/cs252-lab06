@@ -1,4 +1,8 @@
+#include "sysinfo.h"
+
 #include <gtk/gtk.h>
+
+system_info g_sys_info_struct = { 0 };
 
 void toggle_active(GtkWidget *widget, gpointer status) {
   if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM (widget))) {
@@ -28,11 +32,11 @@ static void activate(GtkApplication *app, gpointer user_data) {
   GtkWidget *button;
   GtkWidget *notebook;
   GtkWidget *frame;
-  GtkWidget *label;
   GtkWidget *menuBar;
   GtkWidget *subMenu;
   GtkWidget *menuItem;
   GtkWidget *subItem;
+  GtkWidget *label;
   GtkWidget *vbox;
 
   GtkWidget *radio_group;
@@ -155,7 +159,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
   gtk_widget_set_margin_top(notebook, 20);
   gtk_widget_set_margin_start(notebook, 10);
   gtk_widget_set_margin_end(notebook, 10);
-  gtk_widget_set_margin_bottom(notebook, 30);
+  gtk_widget_set_margin_bottom(notebook, 40);
 
   // set tab position
   gtk_notebook_set_tab_pos(GTK_NOTEBOOK (notebook), GTK_POS_TOP);
@@ -194,6 +198,10 @@ static void activate(GtkApplication *app, gpointer user_data) {
 int main(int argc, char **argv) {
   GtkApplication *app;
   int status;
+
+  g_sys_info_struct = get_system_info();
+
+  fprintf(stdout, "%s", g_sys_info_struct.release_name);
 
   app = gtk_application_new("org.gtk.example", G_APPLICATION_FLAGS_NONE);
   g_signal_connect(app, "activate", G_CALLBACK (activate), NULL);

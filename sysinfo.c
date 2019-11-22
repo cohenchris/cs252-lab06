@@ -191,6 +191,6 @@ void get_disk_info() {
 system_info get_system_info() {
   get_release_info();
   get_hardware_info();
-  //get_disk_info();
+  get_disk_info();
   return g_sys_info;
 } /* get_system_info() */
