@@ -63,4 +63,6 @@ void main() {
     free(curr_proc_info[i].proc_user);
     curr_proc_info[i].proc_user = NULL;
   }
+  free(curr_proc_info);
+  curr_proc_info = NULL;
 } /* main() */
