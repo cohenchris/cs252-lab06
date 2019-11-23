@@ -62,6 +62,20 @@ void main() {
     curr_proc_info[i].proc_name = NULL;
     free(curr_proc_info[i].proc_user);
     curr_proc_info[i].proc_user = NULL;
+    /*
+    free(curr_proc_info[i].mem);
+    curr_proc_info[i].mem = NULL;
+    free(curr_proc_info[i].virtual_mem);
+    curr_proc_info[i].virtual_mem = NULL;
+    free(curr_proc_info[i].resident_mem);
+    curr_proc_info[i].resident_mem = NULL;
+    free(curr_proc_info[i].shared_mem);
+    curr_proc_info[i].shared_mem = NULL;
+    free(curr_proc_info[i].cpu_time);
+    curr_proc_info[i].cpu_time = NULL;
+    free(curr_proc_info[i].start_date);
+    curr_proc_info[i].start_date = NULL;
+    */
   }
   free(curr_proc_info);
   curr_proc_info = NULL;
