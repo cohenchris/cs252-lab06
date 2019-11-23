@@ -208,3 +208,40 @@ process_info * get_proc_info() {
   return g_proc_info;
 } /* get_proc_info() */
 
+void get_time_info(process_info new_proc, char * proc_dir_path) {
+  /* CPU Time from /proc/[pid]/stat file */
+
+  char * stat = "/stat";
+  char * stat_file_path = strdup(proc_dir_path);
+  stat_file_path =  realloc(stat_file_path, sizeof(char) *
+                                            (strlen(stat_file_path) +
+                                             strlen(stat) + 1));
+  strcat(stat_file_path, stat);
+
+  FILE * stat_file = fopen(stat_file_path, "r");
+  if (stat_file == NULL) {
+    perror("fopen");
+    exit(EXIT_FAILURE);
+  }
+
+  fclose(stat_file);
+  stat_file = NULL;
+
+  /* date/time started from /proc/[pid]/uptime file */
+
+  char * uptime = "/uptime";
+  char * uptime_file_path = strdup(proc_dir_path);
+  uptime_file_path = realloc(uptime_file_path, sizeof(char) *
+                                               (strlen(uptime_file_path) +
+                                                strlen(uptime) + 1));
+  strcat(uptime_file_path, uptime);
+
+  FILE * uptime_file = fopen(uptime_file_path, "r");
+  if (uptime_file == NULL) {
+    perror("fopen");
+    exit(EXIT_FAILURE);
+  }
+
+  fclose(uptime_file);
+  uptime_file = NULL;
+} /* get_time_info() */
