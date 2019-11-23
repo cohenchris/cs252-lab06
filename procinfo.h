@@ -6,8 +6,7 @@ typedef struct {
   char * proc_name;
   size_t proc_id;
   char * proc_user;
-  //TODO
-  bool running;
+  char * state;
   char * mem;
   char * virtual_mem;
   char * resident_mem;
@@ -17,5 +16,6 @@ typedef struct {
 } process_info;
 
 process_info * get_proc_info();
+void get_mem_info();
 
 int g_num_procs;

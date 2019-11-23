@@ -9,10 +9,124 @@
 #include <string.h>
 #include <sys/vfs.h>
 
-//TODO: keep track of user who owns the process!!
-
 process_info * g_proc_info = NULL;
 int g_num_procs = 0;
+
+void read_status_file(process_info new_proc, char * proc_dir_path) {
+  char * line = NULL;
+  size_t len = 0;
+  ssize_t read_len = 0;
+
+  /* Extract UID and get username from that */
+  char * status_path = strdup(proc_dir_path);
+  char * status = "/status";
+  status_path = realloc(status_path, sizeof(char) *
+                                    (strlen(status_path) +
+                                     strlen(status) + 1));
+  strcat(status_path, status);
+
+  FILE * status_file = fopen(status_path, "r");
+  if (status_file == NULL) {
+    perror("fopen");
+    exit(EXIT_FAILURE);
+  }
+
+  char * first_tab = NULL;
+  char * second_tab = NULL;
+  size_t shared_size = 0;
+  int shared_malloc_size = 0;
+  while ((read_len = getline(&line, &len, status_file)) != -1) {
+    first_tab = strchr(line, '\t');
+    second_tab = strchr(first_tab + 1, '\t');
+    if (strstr(line, "Uid:") != NULL) {
+      /* Extract UID */
+      char * uid = strndup(first_tab + 1, second_tab - first_tab - 1);
+      struct passwd * pws_struct = { 0 };
+      uid_t uid_num = 0;
+      sscanf(uid, "%u", &uid_num);
+
+      pws_struct = getpwuid(uid_num);
+      new_proc.proc_user = strdup(pws_struct->pw_name);
+
+      free(uid);
+      uid = NULL;
+    }
+    else if (strstr(line, "State:")  != NULL) {
+      /* Extract Running State */
+      char * state = strndup(first_tab + 1, strlen(first_tab + 1) - 1);
+      new_proc.state = strdup(state);
+
+      free(state);
+      state = NULL;
+    }
+    else if (strstr(line, "VmSize:")  != NULL) {
+      /* Extract Virtual Memory Size */
+      char * vmsize = strndup(first_tab + 1, strlen(first_tab + 1) - 1);
+      new_proc.virtual_mem = strdup(vmsize);
+
+      free(vmsize);
+      vmsize = NULL;
+    }
+    else if (strstr(line, "VmRSS")  != NULL) {
+      /* Extract Resident Memory */
+      char * vmrss = strndup(first_tab + 1, strlen(first_tab + 1) - 1);
+      new_proc.resident_mem = strdup(vmrss);
+
+      free(vmrss);
+      vmrss = NULL;
+    }
+    else if (strstr(line, "RssFile")  != NULL) {
+      /* Extract one part of shared memory */
+      char * rssfile = strndup(first_tab + 1, strlen(first_tab + 1) - 1);
+      size_t rssfile_size = 0;
+      sscanf(rssfile, "%lu", &rssfile_size);
+      shared_size += rssfile_size;
+      shared_malloc_size += strlen(rssfile);
+
+      free(rssfile);
+      rssfile = NULL;
+    }
+    else if (strstr(line, "RssShmem")  != NULL) {
+      /* Extract second part of shared memory */
+      char * rssshmem = strndup(first_tab + 1, strlen(first_tab + 1) - 1);
+      size_t rssshmem_size = 0;
+      sscanf(rssshmem, "%lu", &rssshmem_size);
+      shared_size += rssshmem_size;
+      shared_malloc_size += strlen(rssshmem);
+
+      free(rssshmem);
+      rssshmem = NULL;
+    }
+    else if (strstr(line, "") != NULL) {
+      /* Extract total normal memory */
+      char * mem = strndup(first_tab + 1, strlen(first_tab + 1) - 1);
+
+      free(mem);
+      mem = NULL;
+    }
+  }
+
+  /* Add up total shared memory. '+ 5' is to include the label 'kB' */
+
+  new_proc.shared_mem = malloc(sizeof(char) * (shared_malloc_size + 5));
+  sprintf(new_proc.shared_mem, "%lu", shared_size);
+  strcat(new_proc.shared_mem, " kb");
+  
+  /* Add new process information to g_num_procs */
+
+  g_proc_info[g_num_procs] = new_proc;
+  g_num_procs++;
+
+  free(status_path);
+  status_path = NULL;
+  fclose(status_file);
+  status_file = NULL;
+  free(line);
+  line = NULL;
+} /* read_status_file() */
+
+/* TODO: header
+ */
 
 process_info * get_proc_info() {
   char * base_dir = "/proc";
@@ -69,47 +183,7 @@ process_info * get_proc_info() {
 
           new_proc.proc_id = curr_proc_id;
 
-          /* Extract UID from /proc/[proc_id]/status */
-          char * status_path = strdup(proc_dir_path);
-          char * status = "/status";
-          status_path = realloc(status_path, sizeof(char) *
-                                            (strlen(status_path) +
-                                             strlen(status) + 1));
-          strcat(status_path, status);
-
-          FILE * status_file = fopen(status_path, "r");
-          if (status_file == NULL) {
-            perror("fopen");
-            exit(EXIT_FAILURE);
-          }
-
-          char * first_tab = NULL;
-          char * second_tab = NULL;
-          char * uid = NULL;
-          while ((read_len = getline(&line, &len, status_file)) != -1) {
-            if (strstr(line, "Uid:") != NULL) {
-              first_tab = strchr(line, '\t');
-              second_tab = strchr(first_tab + 1, '\t');
-              uid = strndup(first_tab + 1, second_tab - first_tab - 1);
-              break;
-            }
-          }
-          struct passwd * pws_struct = { 0 };
-          uid_t uid_num = 0;
-          sscanf(uid, "%u", &uid_num);
-
-          pws_struct = getpwuid(uid_num);
-          new_proc.proc_user = strdup(pws_struct->pw_name);
-
-          g_proc_info[g_num_procs] = new_proc;
-          g_num_procs++;
-
-          free(uid);
-          uid = NULL;
-          free(status_path);
-          status_path = NULL;
-          fclose(status_file);
-          status_file = NULL;
+          read_status_file(new_proc, proc_dir_path);
         }
       }
       free(line);
@@ -133,3 +207,4 @@ process_info * get_proc_info() {
 
   return g_proc_info;
 } /* get_proc_info() */
+

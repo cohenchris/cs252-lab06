@@ -34,12 +34,22 @@ void main() {
 
   process_info * curr_proc_info = get_proc_info();
   //while (curr_proc_info[num_procs].proc_name != NULL) {
-  printf("%-9s|%-9s|%-9s\n", "proc_id", "proc_user", "proc_name");
-  printf("%s\n", "------------------------------");
+  printf("%-10s%-15s%-15s%-15s%-15s%-15s%-15s%-15s\n",
+         "proc_id", "proc_user", "proc_name", "state", "mem", "virtual_mem",
+         "resident_mem", "shared_mem");
+  printf("%s\n",
+      "----------------------------------------------------------------------------------------------------------------");
   for (int i = 0; i < g_num_procs; i++) {
-    printf("%-10zu%-10s%s\n", curr_proc_info[i].proc_id,
-                                        curr_proc_info[i].proc_user,
-                                        curr_proc_info[i].proc_name);
+    printf("%-10zu%-15s%-15s%-18s%-15s%-15s%-15s%-15s\n",
+           curr_proc_info[i].proc_id,
+           curr_proc_info[i].proc_user,
+           curr_proc_info[i].proc_name,
+           curr_proc_info[i].state,
+           curr_proc_info[i].mem,
+           curr_proc_info[i].virtual_mem,
+           curr_proc_info[i].resident_mem,
+           curr_proc_info[i].shared_mem
+           );
   }
 
   /* ------------------------------ FREEING ------------------------------ */
@@ -62,7 +72,8 @@ void main() {
     curr_proc_info[i].proc_name = NULL;
     free(curr_proc_info[i].proc_user);
     curr_proc_info[i].proc_user = NULL;
-    /*
+    free(curr_proc_info[i].state);
+    curr_proc_info[i].state = NULL;
     free(curr_proc_info[i].mem);
     curr_proc_info[i].mem = NULL;
     free(curr_proc_info[i].virtual_mem);
@@ -71,6 +82,7 @@ void main() {
     curr_proc_info[i].resident_mem = NULL;
     free(curr_proc_info[i].shared_mem);
     curr_proc_info[i].shared_mem = NULL;
+    /*
     free(curr_proc_info[i].cpu_time);
     curr_proc_info[i].cpu_time = NULL;
     free(curr_proc_info[i].start_date);
