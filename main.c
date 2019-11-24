@@ -5,10 +5,12 @@
 
 #include "sysinfo.h"
 #include "procinfo.h"
+#include "devices.h"
 
 extern int g_num_procs;
+extern int g_num_devices;
 
-void main() {
+int main() {
   printf("#################################################################\n");
   printf("#                        SYSTEM INFO                            #\n");
   printf("#################################################################\n");
@@ -54,6 +56,27 @@ void main() {
            );
   }
 
+  printf("#################################################################\n");
+  printf("#                         DEVICE INFO                           #\n");
+  printf("#################################################################\n");
+  device_info * curr_device_info = get_device_info();
+
+  printf("%-35s%-20s%-20s%-20s%-20s%s\n",
+         "device name", "1k blocks", "used", "available",
+         "use %", "mount point");
+  printf("%s\n",
+      "--------------------------------------------------------------------------------------------------------------------------");
+
+  for (int i = 0; i < g_num_devices; i++) {
+    printf("%-35s%-20s%-20s%-20s%-20s%-20s\n",
+           curr_device_info[i].device,
+           curr_device_info[i].num_blocks,
+           curr_device_info[i].used,
+           curr_device_info[i].available,
+           curr_device_info[i].use_percent,
+           curr_device_info[i].mount_point);
+  }
+
   /* ------------------------------ FREEING ------------------------------ */
 
   free(curr_sys_info.release_name);
@@ -91,4 +114,23 @@ void main() {
   }
   free(curr_proc_info);
   curr_proc_info = NULL;
+
+  for (int i = 0; i < g_num_devices; i++) {
+    free(curr_device_info[i].device);
+    curr_device_info[i].device = NULL;
+    free(curr_device_info[i].mount_point);
+    curr_device_info[i].mount_point = NULL;
+    free(curr_device_info[i].num_blocks);
+    curr_device_info[i].num_blocks = NULL;
+    free(curr_device_info[i].used);
+    curr_device_info[i].used = NULL;
+    free(curr_device_info[i].available);
+    curr_device_info[i].available = NULL;;
+    free(curr_device_info[i].use_percent);
+    curr_device_info[i].use_percent = NULL;
+  }
+  free(curr_device_info);
+  curr_device_info = NULL;
+
+  return EXIT_SUCCESS;
 } /* main() */
