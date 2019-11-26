@@ -11,6 +11,13 @@ int g_num_devices = 0;
 device_info * g_device_info;
 
 device_info * get_device_info() {
+  /* Clears the original processes when this function is called */
+  g_num_devices = 0;
+  if (g_device_info != NULL) {
+    free(g_device_info);
+    g_device_info = NULL;
+  }
+
   FILE * mounts_file = fopen("/proc/mounts", "r");
   if (mounts_file == NULL) {
     perror("fopen");
@@ -45,39 +52,47 @@ device_info * get_device_info() {
         next_field_delim = strstr(strstr(size_field, "=") + 1, " ");
       }
       new_device.num_blocks = strndup(strstr(size_field, "=") + 1,
-          next_field_delim - strstr(size_field, "=") - 1);
+          next_field_delim - strstr(size_field, "=") - 2);
     }
-    //TODO: statfs shit
-    //TODO: used, available, use_percent
+
+    /* DEVICE STORAGE INFORMATION */
 
     struct statfs fs_stats = { 0 };
 
     if (statfs(new_device.device, &fs_stats) == -1) {
-      new_device.num_blocks = strdup("0");
       new_device.used = strdup("0");
       new_device.available = strdup("0");
       new_device.use_percent = strdup("0%");
     }
     else {
+      //TODO: check if these are right?
       ssize_t total_space = fs_stats.f_blocks;
       ssize_t amt_avail = fs_stats.f_bavail;
       ssize_t amt_used = total_space - amt_avail;
       float percent_used = ((float) amt_used/(float) total_space) * 100.0;
 
-      new_device.num_blocks = malloc(sizeof(char) * MAX_INT_LEN);
-      sprintf(new_device.num_blocks, "%lu", total_space);
+      /* 1k-blocks */
+      if (new_device.num_blocks == 0) {
+        free(new_device.num_blocks);
+        new_device.num_blocks = NULL;
 
+        new_device.num_blocks = malloc(sizeof(char) * MAX_INT_LEN);
+        sprintf(new_device.num_blocks, "%lu", total_space);
+      }
+
+      /* Used memory */
       new_device.used = malloc(sizeof(char) * MAX_INT_LEN);
       sprintf(new_device.used, "%lu", amt_used);
 
+      /* Available memory */
       new_device.available = malloc(sizeof(char) * MAX_INT_LEN);
       sprintf(new_device.available, "%lu", amt_avail);
 
+      /* Percent of memory used */
       new_device.use_percent = malloc(sizeof(char) * MAX_INT_LEN);
       sprintf(new_device.use_percent, "%.2lf", percent_used);
       strcat(new_device.use_percent, "%");
     }
-
 
     // add new device to list
     g_device_info = realloc(g_device_info,

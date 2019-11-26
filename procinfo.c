@@ -9,6 +9,8 @@
 #include <string.h>
 #include <sys/vfs.h>
 
+#define MAX_INT_LEN (10)
+
 process_info * g_proc_info = NULL;
 int g_num_procs = 0;
 
@@ -28,7 +30,51 @@ int compare_procs(const void * p1, const void * p2) {
   }
 } /* compare_procs() */
 
-void read_status_file(process_info new_proc, char * proc_dir_path) {
+void get_time_info(process_info * new_proc, char * proc_dir_path) {
+  char * stat_path = strdup(proc_dir_path);
+  char * stat = "/stat";
+  stat_path = realloc(stat_path, sizeof(char) *
+                                 (strlen(stat_path) + strlen(stat)) + 1);
+  strcat(stat_path, stat);
+
+  FILE * stat_file = fopen(stat_path, "r");
+  if (stat_file == NULL) {
+    perror("stat_file");
+    exit(EXIT_FAILURE);
+  }
+
+  char * line = NULL;
+  size_t len = 0;
+  ssize_t read_len = 0;
+  if (read_len = getline(&line, &len, stat_file) == -1) {
+    perror("getline");
+    exit(EXIT_FAILURE);
+  }
+
+  char * field = strtok(line, " ");
+
+  for (int i = 0; i < 13; i++) {
+    field = strtok(NULL, " ");
+  }
+
+  size_t total_time = 0;
+  total_time += atol(field);
+  field = strtok(NULL, " ");
+  total_time += atol(field);
+
+  new_proc->cpu_time = malloc(sizeof(char) * MAX_INT_LEN);
+  sprintf(new_proc->cpu_time, "%lu", total_time);
+
+  free(line);
+  line = NULL;
+  free(stat_path);
+  stat_path = NULL;
+
+  fclose(stat_file);
+  stat_file = NULL;
+} /* get_time_info() */
+
+void read_status_file(process_info * new_proc, char * proc_dir_path) {
   char * line = NULL;
   size_t len = 0;
   ssize_t read_len = 0;
@@ -62,7 +108,7 @@ void read_status_file(process_info new_proc, char * proc_dir_path) {
       sscanf(uid, "%u", &uid_num);
 
       pws_struct = getpwuid(uid_num);
-      new_proc.proc_user = strdup(pws_struct->pw_name);
+      new_proc->proc_user = strdup(pws_struct->pw_name);
 
       free(uid);
       uid = NULL;
@@ -70,7 +116,7 @@ void read_status_file(process_info new_proc, char * proc_dir_path) {
     else if (strstr(line, "State:")  != NULL) {
       /* Extract Running State */
       char * state = strndup(first_tab + 1, strlen(first_tab + 1) - 1);
-      new_proc.state = strdup(state);
+      new_proc->state = strdup(state);
 
       free(state);
       state = NULL;
@@ -78,7 +124,7 @@ void read_status_file(process_info new_proc, char * proc_dir_path) {
     else if (strstr(line, "VmSize:")  != NULL) {
       /* Extract Virtual Memory Size */
       char * vmsize = strndup(first_tab + 1, strlen(first_tab + 1) - 1);
-      new_proc.virtual_mem = strdup(vmsize);
+      new_proc->virtual_mem = strdup(vmsize);
 
       free(vmsize);
       vmsize = NULL;
@@ -86,7 +132,7 @@ void read_status_file(process_info new_proc, char * proc_dir_path) {
     else if (strstr(line, "VmRSS")  != NULL) {
       /* Extract Resident Memory */
       char * vmrss = strndup(first_tab + 1, strlen(first_tab + 1) - 1);
-      new_proc.resident_mem = strdup(vmrss);
+      new_proc->resident_mem = strdup(vmrss);
 
       free(vmrss);
       vmrss = NULL;
@@ -117,7 +163,7 @@ void read_status_file(process_info new_proc, char * proc_dir_path) {
       /* Extract parent process ID to make tree view */
       char * ppid = strndup(first_tab + 1, strlen(first_tab + 1) - 1);
       size_t ppid_num = atol(ppid);
-      new_proc.parent_id = ppid_num;
+      new_proc->parent_id = ppid_num;
 
       free(ppid);
       ppid = NULL;
@@ -133,15 +179,10 @@ void read_status_file(process_info new_proc, char * proc_dir_path) {
 
   /* Add up total shared memory. '+ 5' is to include the label 'kB' */
 
-  new_proc.shared_mem = malloc(sizeof(char) * (shared_malloc_size + 5));
-  sprintf(new_proc.shared_mem, "%lu", shared_size);
-  strcat(new_proc.shared_mem, " kb");
+  new_proc->shared_mem = malloc(sizeof(char) * (shared_malloc_size + 5));
+  sprintf(new_proc->shared_mem, "%lu", shared_size);
+  strcat(new_proc->shared_mem, " kb");
   
-  /* Add new process information to g_num_procs */
-
-  g_proc_info[g_num_procs] = new_proc;
-  g_num_procs++;
-
   free(status_path);
   status_path = NULL;
   fclose(status_file);
@@ -208,7 +249,13 @@ process_info * get_proc_info() {
 
           new_proc.proc_id = curr_proc_id;
 
-          read_status_file(new_proc, proc_dir_path);
+          read_status_file(&new_proc, proc_dir_path);
+          get_time_info(&new_proc, proc_dir_path);
+
+          /* Add new process information to g_num_procs */
+
+          g_proc_info[g_num_procs] = new_proc;
+          g_num_procs++;
         }
       }
       free(line);
@@ -234,45 +281,3 @@ process_info * get_proc_info() {
 
   return g_proc_info;
 } /* get_proc_info() */
-
-void get_time_info(process_info new_proc, char * proc_dir_path) {
-  /* CPU Time from /proc/[pid]/stat file */
-
-  char * stat = "/stat";
-  char * stat_file_path = strdup(proc_dir_path);
-  stat_file_path =  realloc(stat_file_path, sizeof(char) *
-                                            (strlen(stat_file_path) +
-                                             strlen(stat) + 1));
-  strcat(stat_file_path, stat);
-
-  FILE * stat_file = fopen(stat_file_path, "r");
-  if (stat_file == NULL) {
-    perror("fopen");
-    exit(EXIT_FAILURE);
-  }
-
-  //TODO: cpu time
-
-  fclose(stat_file);
-  stat_file = NULL;
-
-  /* date/time started from /proc/[pid]/uptime file */
-
-  char * uptime = "/uptime";
-  char * uptime_file_path = strdup(proc_dir_path);
-  uptime_file_path = realloc(uptime_file_path, sizeof(char) *
-                                               (strlen(uptime_file_path) +
-                                                strlen(uptime) + 1));
-  strcat(uptime_file_path, uptime);
-
-  FILE * uptime_file = fopen(uptime_file_path, "r");
-  if (uptime_file == NULL) {
-    perror("fopen");
-    exit(EXIT_FAILURE);
-  }
-
-  //TODO: date/time
-
-  fclose(uptime_file);
-  uptime_file = NULL;
-} /* get_time_info() */
