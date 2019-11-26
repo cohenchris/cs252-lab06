@@ -12,6 +12,22 @@
 process_info * g_proc_info = NULL;
 int g_num_procs = 0;
 
+/*
+ * Helps sort processes by parent id. Helpful for tree view in process manager.
+ */
+
+int compare_procs(const void * p1, const void * p2) {
+  if (((process_info *) p1)->parent_id < ((process_info *) p2)->parent_id) {
+    return -1;
+  }
+  else if (((process_info *) p1)->parent_id > ((process_info *) p2)->parent_id) {
+    return 1;
+  }
+  else {
+    return 0;
+  }
+} /* compare_procs() */
+
 void read_status_file(process_info new_proc, char * proc_dir_path) {
   char * line = NULL;
   size_t len = 0;
@@ -213,6 +229,8 @@ process_info * get_proc_info() {
     exit(EXIT_FAILURE);
   }
   dir = NULL;
+
+  qsort(g_proc_info, g_num_procs, sizeof(process_info), compare_procs);
 
   return g_proc_info;
 } /* get_proc_info() */
