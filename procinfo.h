@@ -19,5 +19,6 @@ typedef struct {
 process_info * get_proc_info();
 void read_status_file(process_info new_proc, char * proc_dir_path);
 void get_time_info(process_info new_proc, char * proc_dir_path);
+int compare_procs(const void * p1, const void * p2);
 
 int g_num_procs;
