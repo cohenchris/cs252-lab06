@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/vfs.h>
+
+#define MAX_INT_LEN (10)
 
 int g_num_devices = 0;
 device_info * g_device_info;
@@ -46,6 +49,35 @@ device_info * get_device_info() {
     }
     //TODO: statfs shit
     //TODO: used, available, use_percent
+
+    struct statfs fs_stats = { 0 };
+
+    if (statfs(new_device.device, &fs_stats) == -1) {
+      new_device.num_blocks = strdup("0");
+      new_device.used = strdup("0");
+      new_device.available = strdup("0");
+      new_device.use_percent = strdup("0%");
+    }
+    else {
+      ssize_t total_space = fs_stats.f_blocks;
+      ssize_t amt_avail = fs_stats.f_bavail;
+      ssize_t amt_used = total_space - amt_avail;
+      float percent_used = ((float) amt_used/(float) total_space) * 100.0;
+
+      new_device.num_blocks = malloc(sizeof(char) * MAX_INT_LEN);
+      sprintf(new_device.num_blocks, "%lu", total_space);
+
+      new_device.used = malloc(sizeof(char) * MAX_INT_LEN);
+      sprintf(new_device.used, "%lu", amt_used);
+
+      new_device.available = malloc(sizeof(char) * MAX_INT_LEN);
+      sprintf(new_device.available, "%lu", amt_avail);
+
+      new_device.use_percent = malloc(sizeof(char) * MAX_INT_LEN);
+      sprintf(new_device.use_percent, "%.2lf", percent_used);
+      strcat(new_device.use_percent, "%");
+    }
+
 
     // add new device to list
     g_device_info = realloc(g_device_info,
