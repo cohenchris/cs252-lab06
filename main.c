@@ -36,14 +36,15 @@ int main() {
 
   process_info * curr_proc_info = get_proc_info();
   //while (curr_proc_info[num_procs].proc_name != NULL) {
-  printf("%-10s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s\n",
-         "proc_id", "proc_user", "proc_name", "state", "mem", "virtual_mem",
-         "resident_mem", "shared_mem", "cpu_time", "start_date");
+  printf("%-10s%-10s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s%-15s\n",
+         "proc_id", "parent id", "proc_user", "proc_name", "state", "mem",
+         "virtual_mem", "resident_mem", "shared_mem", "cpu_time", "start_date");
   printf("%s\n",
       "---------------------------------------------------------------------------------------------------------------------------------------------");
   for (int i = 0; i < g_num_procs; i++) {
-    printf("%-10zu%-15s%-15s%-18s%-15s%-15s%-15s%-15s%-15s%-15s\n",
+    printf("%-10zu%-10zu%-15s%-15s%-18s%-15s%-15s%-15s%-15s%-15s%-15s\n",
            curr_proc_info[i].proc_id,
+           curr_proc_info[i].parent_id,
            curr_proc_info[i].proc_user,
            curr_proc_info[i].proc_name,
            curr_proc_info[i].state,

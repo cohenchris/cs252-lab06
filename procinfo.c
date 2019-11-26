@@ -97,6 +97,15 @@ void read_status_file(process_info new_proc, char * proc_dir_path) {
       free(rssshmem);
       rssshmem = NULL;
     }
+    else if (strstr(line, "PPid") != NULL) {
+      /* Extract parent process ID to make tree view */
+      char * ppid = strndup(first_tab + 1, strlen(first_tab + 1) - 1);
+      size_t ppid_num = atol(ppid);
+      new_proc.parent_id = ppid_num;
+
+      free(ppid);
+      ppid = NULL;
+    }
     else if (strstr(line, "") != NULL) {
       /* Extract total normal memory */
       char * mem = strndup(first_tab + 1, strlen(first_tab + 1) - 1);
@@ -224,6 +233,8 @@ void get_time_info(process_info new_proc, char * proc_dir_path) {
     exit(EXIT_FAILURE);
   }
 
+  //TODO: cpu time
+
   fclose(stat_file);
   stat_file = NULL;
 
@@ -241,6 +252,8 @@ void get_time_info(process_info new_proc, char * proc_dir_path) {
     perror("fopen");
     exit(EXIT_FAILURE);
   }
+
+  //TODO: date/time
 
   fclose(uptime_file);
   uptime_file = NULL;

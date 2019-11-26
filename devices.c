@@ -28,6 +28,12 @@ device_info * get_device_info() {
     field = strtok(line, " ");
     new_device.mount_point = strdup(field);
 
+    // skip a field to get to the 4th entry, which contains size
+    field = strtok(line, " ");
+    field = strtok(line, " ");
+    
+    //TODO: statfs shit
+
     // add new device to list
     g_device_info = realloc(g_device_info,
                             sizeof(device_info) * (g_num_devices + 1));

@@ -5,6 +5,7 @@
 typedef struct {
   char * proc_name;
   size_t proc_id;
+  size_t parent_id;
   char * proc_user;
   char * state;
   char * mem;
