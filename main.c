@@ -30,6 +30,22 @@ int main() {
 
   printf("\n\n");
 
+  /* FREE SYSTEM INFO */
+
+  free(curr_sys_info.release_name);
+  curr_sys_info.release_name = NULL;
+  free(curr_sys_info.release_version);
+  curr_sys_info.release_version = NULL;
+  free(curr_sys_info.kernel_version);
+  curr_sys_info.kernel_version = NULL;
+  free(curr_sys_info.ram_size);
+  curr_sys_info.ram_size = NULL;
+  free(curr_sys_info.cpu_info);
+  curr_sys_info.cpu_info = NULL;
+  free(curr_sys_info.disk_space);
+  curr_sys_info.disk_space = NULL;
+
+
   printf("#################################################################\n");
   printf("#                        PROCESS INFO                           #\n");
   printf("#################################################################\n");
@@ -57,41 +73,7 @@ int main() {
            );
   }
 
-  printf("#################################################################\n");
-  printf("#                         DEVICE INFO                           #\n");
-  printf("#################################################################\n");
-  device_info * curr_device_info = get_device_info();
-
-  printf("%-35s%-20s%-20s%-20s%-20s%s\n",
-         "device name", "1k blocks", "used", "available",
-         "use %", "mount point");
-  printf("%s\n",
-      "--------------------------------------------------------------------------------------------------------------------------");
-
-  for (int i = 0; i < g_num_devices; i++) {
-    printf("%-35s%-20s%-20s%-20s%-20s%-20s\n",
-           curr_device_info[i].device,
-           curr_device_info[i].num_blocks,
-           curr_device_info[i].used,
-           curr_device_info[i].available,
-           curr_device_info[i].use_percent,
-           curr_device_info[i].mount_point);
-  }
-
-  /* ------------------------------ FREEING ------------------------------ */
-
-  free(curr_sys_info.release_name);
-  curr_sys_info.release_name = NULL;
-  free(curr_sys_info.release_version);
-  curr_sys_info.release_version = NULL;
-  free(curr_sys_info.kernel_version);
-  curr_sys_info.kernel_version = NULL;
-  free(curr_sys_info.ram_size);
-  curr_sys_info.ram_size = NULL;
-  free(curr_sys_info.cpu_info);
-  curr_sys_info.cpu_info = NULL;
-  free(curr_sys_info.disk_space);
-  curr_sys_info.disk_space = NULL;
+  /* FREE PROCESS INFO */
 
   for (int i = 0; i < g_num_procs; i++) {
     free(curr_proc_info[i].proc_name);
@@ -115,6 +97,30 @@ int main() {
   }
   free(curr_proc_info);
   curr_proc_info = NULL;
+
+
+  printf("#################################################################\n");
+  printf("#                         DEVICE INFO                           #\n");
+  printf("#################################################################\n");
+  device_info * curr_device_info = get_device_info();
+
+  printf("%-35s%-20s%-20s%-20s%-20s%s\n",
+         "device name", "1k blocks", "used", "available",
+         "use %", "mount point");
+  printf("%s\n",
+      "--------------------------------------------------------------------------------------------------------------------------");
+
+  for (int i = 0; i < g_num_devices; i++) {
+    printf("%-35s%-20s%-20s%-20s%-20s%-20s\n",
+           curr_device_info[i].device,
+           curr_device_info[i].num_blocks,
+           curr_device_info[i].used,
+           curr_device_info[i].available,
+           curr_device_info[i].use_percent,
+           curr_device_info[i].mount_point);
+  }
+
+  /* FREE DEVICE INFO */
 
   for (int i = 0; i < g_num_devices; i++) {
     free(curr_device_info[i].device);
