@@ -50,6 +50,10 @@ mmap_info * list_mm(pid_t pid) {
 
   FILE * mmap_fp = fopen(mmap_file_name, "r");
   if (mmap_fp == NULL) {
+    free(pid_str);
+    pid_str = NULL;
+    free(mmap_file_name);
+    mmap_file_name = NULL;
     perror("invalid pid");
     return NULL;
   }
@@ -113,6 +117,8 @@ open_files * list_open_files(pid_t pid) {
   if (dir == NULL) {
     free(files_name);
     files_name = NULL;
+    free(pid_str);
+    pid_str = NULL;
     perror("invalid pid");
     return NULL;
   }
