@@ -22,10 +22,12 @@ void get_release_info() {
   char * line = NULL;
   size_t len = 0;
   ssize_t read_len = 0;
+  char * first_quote = NULL;
+  char * second_quote = NULL;
   while ((read_len = getline(&line, &len, fp)) != -1) {
     if (strstr(line, "NAME=") != NULL) {
-      char * first_quote = strchr(line, '"');
-      char * second_quote = strchr(first_quote + 1, '"');
+      first_quote = strchr(line, '"');
+      second_quote = strchr(first_quote + 1, '"');
       g_sys_info.release_name = strndup(first_quote + 1,
                                         second_quote - first_quote - 1);
       if (g_sys_info.release_version != NULL) {
@@ -159,11 +161,15 @@ void get_disk_info() {
   char * mount_name = NULL;
   ssize_t total_size = 0;
   struct statfs fs_stats = { 0 };
+  char * first_space = NULL;
+  char * second_space = NULL;
   while ((read_len = getline(&line, &len, fp)) != -1) {
-    char * first_space = strchr(line, ' ');
-    char * second_space = strchr(first_space + 1, ' ');
+    first_space = strchr(line, ' ');
+    second_space = strchr(first_space + 1, ' ');
     mount_name = strndup(first_space + 1, second_space - first_space - 1);
     if (statfs(mount_name, &fs_stats) == -1) {
+      free(mount_name);
+      mount_name = NULL;
       continue;
       /*
       printf("%d\n", errno);

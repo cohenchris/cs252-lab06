@@ -3,11 +3,12 @@ CS252 System Monitor
 
 ### Working Functionality
 - System Information
+- Process Information
+- Detailed View
+- File System
+- Process-Specific Actions
+
 -----
 
 ### TODO
-- Process Information
-- Process-Specific Actions
-- Detailed View
 - Graphs
-- File System
