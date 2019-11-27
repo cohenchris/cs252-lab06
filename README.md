@@ -7,8 +7,9 @@ CS252 System Monitor
 - Detailed View
 - File System
 - Process-Specific Actions
+- Graphs
 
 -----
 
 ### TODO
-- Graphs
+- Visual representation of all process data
