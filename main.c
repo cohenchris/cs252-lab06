@@ -6,6 +6,7 @@
 #include "sysinfo.h"
 #include "procinfo.h"
 #include "devices.h"
+#include "proc_actions.h"
 
 extern int g_num_procs;
 extern int g_num_devices;
@@ -104,14 +105,14 @@ int main() {
   printf("#################################################################\n");
   device_info * curr_device_info = get_device_info();
 
-  printf("%-35s%-20s%-20s%-20s%-20s%s\n",
+  printf("%-35s%-10s%-10s%-10s%-7s%s\n",
          "device name", "1k blocks", "used", "available",
          "use %", "mount point");
   printf("%s\n",
-      "--------------------------------------------------------------------------------------------------------------------------");
+      "------------------------------------------------------------------------------------------------------");
 
   for (int i = 0; i < g_num_devices; i++) {
-    printf("%-35s%-20s%-20s%-20s%-20s%-20s\n",
+    printf("%-35s%-10s%-10s%-10s%-7s%-20s\n",
            curr_device_info[i].device,
            curr_device_info[i].num_blocks,
            curr_device_info[i].used,
@@ -138,6 +139,11 @@ int main() {
   }
   free(curr_device_info);
   curr_device_info = NULL;
+
+  char * mmap = list_mm(64554);
+  printf("\n\n%s\n", mmap);
+  free(mmap);
+  mmap = NULL;
 
   return EXIT_SUCCESS;
 } /* main() */

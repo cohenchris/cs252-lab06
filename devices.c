@@ -61,7 +61,7 @@ device_info * get_device_info() {
 
     if (statfs(new_device.device, &fs_stats) == -1) {
       new_device.used = strdup("0");
-      new_device.available = strdup("0");
+      new_device.available = strdup(new_device.num_blocks);
       new_device.use_percent = strdup("0%");
     }
     else {
