@@ -46,10 +46,11 @@ int main() {
   free(curr_sys_info.disk_space);
   curr_sys_info.disk_space = NULL;
 
-
+  printf("\n\n");
   printf("#################################################################\n");
   printf("#                        PROCESS INFO                           #\n");
   printf("#################################################################\n");
+  printf("\n");
 
   process_info * curr_proc_info = get_proc_info();
   //while (curr_proc_info[num_procs].proc_name != NULL) {
@@ -100,9 +101,11 @@ int main() {
   curr_proc_info = NULL;
 
 
+  printf("\n\n");
   printf("#################################################################\n");
   printf("#                         DEVICE INFO                           #\n");
   printf("#################################################################\n");
+  printf("\n");
   device_info * curr_device_info = get_device_info();
 
   printf("%-35s%-10s%-10s%-10s%-7s%s\n",
@@ -140,10 +143,70 @@ int main() {
   free(curr_device_info);
   curr_device_info = NULL;
 
-  char * mmap = list_mm(64554);
-  printf("\n\n%s\n", mmap);
+
+  printf("\n\n");
+  printf("#################################################################\n");
+  printf("#                         MEMORY MAPS                           #\n");
+  printf("#################################################################\n");
+  printf("\n");
+
+  printf("%-35s%-7s%-15s%-7s%-15s%s\n",
+         "address", "perms", "offset", "dev", "inode", "pathname");
+  printf("-------------------------------------------------------------------------------------------------------\n");
+  mmap_info * mmap = list_mm(17778);
+  for (int i = 0; i < g_num_maps; i++) {
+  printf("%-35s%-7s%-15s%-7s%-15s%s\n",
+         mmap[i].addr,
+         mmap[i].perms,
+         mmap[i].offset,
+         mmap[i].dev,
+         mmap[i].inode,
+         mmap[i].pathname);
+    free(mmap[i].addr);
+    mmap[i].addr = NULL;
+    free(mmap[i].perms);
+    mmap[i].perms = NULL;
+    free(mmap[i].offset);
+    mmap[i].offset = NULL;
+    free(mmap[i].dev);
+    mmap[i].dev = NULL;
+    free(mmap[i].inode);
+    mmap[i].inode = NULL;
+    free(mmap[i].pathname);
+    mmap[i].pathname = NULL;
+  }
   free(mmap);
   mmap = NULL;
+
+  printf("\n\n");
+  printf("#################################################################\n");
+  printf("#                         OPEN FILES                            #\n");
+  printf("#################################################################\n");
+  printf("\n");
+
+  open_files * open_fds = list_open_files(17778);
+
+  //printf("%-5s%-10s%s\n", "fd", "type", "object");
+  printf("%-5s%s\n", "fd", "object");
+  printf("---------------------\n");
+  for (int i = 0; i < g_num_fds; i++) {
+    //printf("%-5s%-10s%s\n",
+    printf("%-5s%s\n",
+           open_fds[i].fd,
+           //open_fds[i].type,
+           open_fds[i].object);
+
+  }
+  for (int i = 0; i < g_num_fds; i++) {
+    free(open_fds[i].fd);
+    open_fds[i].fd = NULL;
+    //free(open_fds[i].type);
+    //open_fds[i].type = NULL;
+    free(open_fds[i].object);
+    open_fds[i].object = NULL;
+  }
+  free(open_fds);
+  open_fds = NULL;
 
   return EXIT_SUCCESS;
 } /* main() */
