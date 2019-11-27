@@ -130,20 +130,16 @@ void get_network() {
   fscanf(fp, "%*s %Lf %*s %*s %*s %*s %*s %*s %*s %Lf %[^\n]", &recieved, &sent, line);
   g_graph_info.network_sent = sent;
   g_graph_info.network_recieved = recieved;
-  
+
+  fclose(fp);
+  fp = NULL;
 }
 
-int main() {
-
+graph_info get_graph_info() {
   get_cpu();
   get_mem();
   get_swap();
   get_network();
-  
-  printf("*********************GRAPH INFO************************\n");
-  printf("cpu usage: %Lf%% of all CPUs\n", g_graph_info.cpu_usage);
-  printf("mem usage: %.2Lf kB\n", g_graph_info.mem_usage);
-  printf("swap usage: %.2Lf kB\n", g_graph_info.swap_usage);
-  printf("network usage sent: %.2Lf\nnetwork usage recieved: %.2Lf\n", g_graph_info.network_sent, g_graph_info.network_recieved);
-  printf("************************END*****************************\n");
+
+  return g_graph_info;
 }

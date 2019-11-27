@@ -7,6 +7,9 @@
 #include "procinfo.h"
 #include "devices.h"
 #include "proc_actions.h"
+#include "graphinfo.h"
+
+#define TEST_PROC (139732)
 
 extern int g_num_procs;
 extern int g_num_devices;
@@ -28,8 +31,6 @@ int main() {
 
   printf("\n---------- DISK ----------\n");
   printf("Available Disk Space: %s kB\n", curr_sys_info.disk_space);
-
-  printf("\n\n");
 
   /* FREE SYSTEM INFO */
 
@@ -73,6 +74,7 @@ int main() {
            curr_proc_info[i].cpu_time,
            curr_proc_info[i].start_date
            );
+    i++;
   }
 
   /* FREE PROCESS INFO */
@@ -153,7 +155,7 @@ int main() {
   printf("%-35s%-7s%-15s%-7s%-15s%s\n",
          "address", "perms", "offset", "dev", "inode", "pathname");
   printf("-------------------------------------------------------------------------------------------------------\n");
-  mmap_info * mmap = list_mm(17778);
+  mmap_info * mmap = list_mm(TEST_PROC);
   for (int i = 0; i < g_num_maps; i++) {
   printf("%-35s%-7s%-15s%-7s%-15s%s\n",
          mmap[i].addr,
@@ -162,6 +164,9 @@ int main() {
          mmap[i].dev,
          mmap[i].inode,
          mmap[i].pathname);
+    
+    /* FREE MEM MAP INFO */
+
     free(mmap[i].addr);
     mmap[i].addr = NULL;
     free(mmap[i].perms);
@@ -184,7 +189,7 @@ int main() {
   printf("#################################################################\n");
   printf("\n");
 
-  open_files * open_fds = list_open_files(17778);
+  open_files * open_fds = list_open_files(TEST_PROC);
 
   //printf("%-5s%-10s%s\n", "fd", "type", "object");
   printf("%-5s%s\n", "fd", "object");
@@ -197,6 +202,9 @@ int main() {
            open_fds[i].object);
 
   }
+
+  /* FREE OPEN FILE INFO */
+
   for (int i = 0; i < g_num_fds; i++) {
     free(open_fds[i].fd);
     open_fds[i].fd = NULL;
@@ -207,6 +215,21 @@ int main() {
   }
   free(open_fds);
   open_fds = NULL;
+
+  printf("\n\n");
+  printf("#################################################################\n");
+  printf("#                         GRAPH INFO                            #\n");
+  printf("#################################################################\n");
+  printf("\n");
+
+  graph_info curr_graph_info = get_graph_info();
+
+  printf("cpu usage: %Lf%% of all CPUs\n", curr_graph_info.cpu_usage);
+  printf("mem usage: %.2Lf kB\n", curr_graph_info.mem_usage);
+  printf("swap usage: %.2Lf kB\n", curr_graph_info.swap_usage);
+  printf("network usage sent: %.2Lf\nnetwork usage recieved: %.2Lf\n",
+         curr_graph_info.network_sent, curr_graph_info.network_recieved);
+  printf("\n");
 
   return EXIT_SUCCESS;
 } /* main() */

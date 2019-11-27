@@ -15,3 +15,4 @@ void get_cpu();
 void get_mem();
 void get_swap();
 void get_network();
+graph_info get_graph_info();

@@ -1,14 +1,11 @@
 #include "procinfo.h"
 
 #include <stdio.h>
-<<<<<<< HEAD
-=======
 #include <time.h>
 #include <sys/types.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <dirent.h>
->>>>>>> 10b927fc0d4de99a24d35e568fea7e89e152d85c
 #include <stdlib.h>
 #include <string.h>
 #include <sys/vfs.h>
@@ -17,8 +14,6 @@
 #define MAX_INT_LEN (10)
 #define MAX_DATE_SIZE (50)
 
-<<<<<<< HEAD
-=======
 process_info * g_proc_info = NULL;
 int g_num_procs = 0;
 
@@ -255,13 +250,18 @@ void read_status_file(process_info * new_proc, char * proc_dir_path) {
 /* TODO: header
  */
 
->>>>>>> 10b927fc0d4de99a24d35e568fea7e89e152d85c
 process_info * get_proc_info() {
-  process_info * all_proc_info = NULL;
+  char * base_dir = "/proc";
+  DIR * dir = opendir(base_dir);
+  if (dir == NULL) {
+    free(base_dir);
+    base_dir = NULL;
+    perror("opendir");
+    exit(EXIT_FAILURE);
+  }
 
+  struct dirent * dir_entry = { 0 };
 
-<<<<<<< HEAD
-=======
   size_t curr_proc_id = 0;
   char * comm = "/comm";
   char * proc_dir_path = NULL;
@@ -336,5 +336,4 @@ process_info * get_proc_info() {
   qsort(g_proc_info, g_num_procs, sizeof(process_info), compare_procs);
 
   return g_proc_info;
->>>>>>> 10b927fc0d4de99a24d35e568fea7e89e152d85c
 } /* get_proc_info() */
