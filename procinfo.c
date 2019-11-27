@@ -1,6 +1,7 @@
 #include "procinfo.h"
 
 #include <stdio.h>
+#include <time.h>
 #include <sys/types.h>
 #include <pwd.h>
 #include <unistd.h>
@@ -8,11 +9,40 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/vfs.h>
+#include <sys/time.h>
 
 #define MAX_INT_LEN (10)
+#define MAX_DATE_SIZE (50)
 
 process_info * g_proc_info = NULL;
 int g_num_procs = 0;
+
+double get_uptime() {
+  FILE * uptime_file = fopen("/proc/uptime", "r");
+  if (uptime_file == NULL) {
+    perror("fopen");
+    exit(EXIT_FAILURE);
+  }
+
+  char * line = NULL;
+  size_t len = 0;
+  ssize_t read_len = 0;
+  if (read_len = getline(&line, &len, uptime_file) == -1) {
+    perror("getline");
+    exit(EXIT_FAILURE);
+  }
+
+  char * field = strtok(line, " ");
+  double uptime = atof(field);
+
+  free(line);
+  line = NULL;
+
+  fclose(uptime_file);
+  uptime_file = NULL;
+
+  return uptime;
+} /* get_uptime */
 
 /*
  * Helps sort processes by parent id. Helpful for tree view in process manager.
@@ -53,6 +83,9 @@ void get_time_info(process_info * new_proc, char * proc_dir_path) {
 
   char * field = strtok(line, " ");
 
+  /* utime and ctime are the 14th and 15th fields in /proc/[pid]/stat, combine
+   * these 2 to get total CPU time for this process */
+
   for (int i = 0; i < 13; i++) {
     field = strtok(NULL, " ");
   }
@@ -64,6 +97,29 @@ void get_time_info(process_info * new_proc, char * proc_dir_path) {
 
   new_proc->cpu_time = malloc(sizeof(char) * MAX_INT_LEN);
   sprintf(new_proc->cpu_time, "%lu", total_time);
+
+  /* START DATE/TIME */
+
+  /* The 22nd field contains the time the process started after system boot */
+  for (int i = 0; i < 7; i++) {
+    field = strtok(NULL, " ");
+  }
+
+  // proc_time is in CLOCK TICKS, so we must convert to seconds
+  double proc_time = atof(field);
+  proc_time /= sysconf(_SC_CLK_TCK);
+
+  double uptime = get_uptime();
+  struct timeval tv = { 0 };
+  gettimeofday(&tv, 0);
+  double boottime = tv.tv_sec - uptime;
+  double proc_start = boottime + proc_time;
+
+  struct tm ts = { 0 };
+  time_t time_t_start = (time_t) proc_start;
+  ts = *localtime(&time_t_start);
+  new_proc->start_date = malloc(sizeof(char) * MAX_DATE_SIZE);
+  strftime(new_proc->start_date, MAX_DATE_SIZE, "%F %T", &ts);
 
   free(line);
   line = NULL;
