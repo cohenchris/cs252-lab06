@@ -56,7 +56,7 @@ void push_parent(process_info process) {
 gint create_tree_view(GtkWidget *treeview) {
   // create Processes treeview and label
   GtkTreeModel *model;
-  GtkTreeIter toplevel, child;
+  GtkTreeIter toplevel, child, iter;
   GtkTreeStore *treestore = gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING);
 
@@ -119,7 +119,23 @@ gint create_tree_view(GtkWidget *treeview) {
   model = GTK_TREE_MODEL(treestore);
   gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), model);
   g_object_unref(model);
+
+  //free(proc_info);
+  //proc_info = NULL;
   return TRUE;
+}
+
+void on_changed(GtkWidget *widget, gpointer label) {
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *value;
+
+  if (gtk_tree_selection_get_selected(
+      GTK_TREE_SELECTION(widget), &model, &iter)) {
+
+    gtk_tree_model_get(model, &iter, 3, &value,  -1);
+    printf("%s\n", value);
+  }
 }
 
 static void activate(GtkApplication *app, gpointer user_data) {
@@ -338,6 +354,14 @@ static void activate(GtkApplication *app, gpointer user_data) {
   // Pass treeview to function, create treestore, add to
   // treeview
   create_tree_view(treeview);
+
+  // Set selector
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
+
+  // Connect changed signal to on_changed signal handler
+  g_signal_connect(selection, "changed",
+      G_CALLBACK(on_changed), NULL);
 
   // create scrollable window
   scroll_window = gtk_scrolled_window_new(NULL, NULL);
