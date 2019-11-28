@@ -5,6 +5,8 @@
 #include <pthread.h>
 
 system_info g_sys_info_struct = { 0 };
+process_info *g_stack = NULL;
+int g_stack_num = 0;
 
 /* 0 = all processes (default)
  * 1 = active processes
@@ -34,48 +36,89 @@ void toggle_my(GtkWidget *widget, gpointer status) {
 void toggle_refresh(GtkWidget *widget, gpointer status) {
 }
 
+int pop_parent() {
+  if (g_stack_num != 0) {
+    g_stack_num -= 1;
+    int id = g_stack[g_stack_num].proc_id;
+    return id;
+  }
+  else {
+    return -1;
+  }
+}
+
+void push_parent(process_info process) {
+  g_stack_num += 1;
+  g_stack = realloc(g_stack, g_stack_num * sizeof(process_info));
+  g_stack[g_stack_num - 1] = process;
+}
+
 gint create_tree_view(GtkWidget *treeview) {
   // create Processes treeview and label
   GtkTreeModel *model;
   GtkTreeIter toplevel, child;
   GtkTreeStore *treestore = gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING);
-  // gtk_tree_store_append(treestore, &toplevel, NULL);
 
   process_info *proc_info = get_proc_info();
-  /*for proc in procs:
-    if proc is child of lastProc:
-      gtk_tree_store_append(treestore, &child, &toplevel);
-      gtk_tree_store_set(treestore, &child,
-                         0, proc.proc_name,
-                         1, proc.state,
-                         2, proc.cpu_time,
-                         3, proc.proc_id,
-                         4, proc.virtual_mem,
-                         -1);
-   else:*/
-   for (int i = 0; i < g_num_procs; i++) {
-     process_info proc = proc_info[i];
-     if (strcmp(proc.proc_user, "chan207") != 0) {
+  for (int i = 0; i < g_num_procs; i++) {
+   process_info proc = proc_info[i];
+
+   // filter out active processes
+   if (g_toggle == 1) {
+     if (strcmp(proc.state, "R (running)") != 0) {
        continue;
      }
-     char buf[1000] = {0};
-     sprintf(buf, "%ld", proc.proc_id);
-     char * proc_id = strdup(buf);
+   }
+   // filter out current user's processes
+   else if (g_toggle == 2) {
+     char *user = strdup(getenv("USER"));
+     if (strcmp(proc.proc_user, user) != 0) {
+       continue;
+     }
+   }
+   
+   // cast proc_id to string
+   char buf[1000] = {0};
+   sprintf(buf, "%ld", proc.proc_id);
+   char * proc_id = strdup(buf);
+   gtk_tree_store_append(treestore, &toplevel, NULL);
+   gtk_tree_store_set(treestore, &toplevel,
+                    0, proc.proc_name,
+                    1, proc.state,
+                    2, proc.cpu_time,
+                    3, proc_id,
+                    4, proc.virtual_mem,
+                    -1);
+
+   /*if (g_stack_num == 0) {
+     push_parent(proc);
      gtk_tree_store_append(treestore, &toplevel, NULL);
      gtk_tree_store_set(treestore, &toplevel,
-                        0, proc.proc_name,
-                        1, proc.state,
-                        2, proc.cpu_time,
-                        3, proc_id,
-                        4, proc.virtual_mem,
-                        -1);
+                      0, proc.proc_name,
+                      1, proc.state,
+                      2, proc.cpu_time,
+                      3, proc_id,
+                      4, proc.virtual_mem,
+                      -1);
    }
-
+   else {
+     // get parents
+     while ((g_stack_num != 0) && (pop_parent() != proc.parent_id)) {
+     }
+     gtk_tree_store_append(treestore, &child, &toplevel);
+     gtk_tree_store_set(treestore, &child,
+                       0, proc.proc_name,
+                       1, proc.state,
+                       2, proc.cpu_time,
+                       3, proc.proc_id,
+                       4, proc.virtual_mem,
+                       -1);
+    }*/
+  }
   model = GTK_TREE_MODEL(treestore);
   gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), model);
   g_object_unref(model);
-  printf("HELLO\n");
   return TRUE;
 }
 
@@ -292,7 +335,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
   gtk_tree_view_column_add_attribute(col, renderer,
       "text", 4);
 
-  // TODO: pass treeview to function, create treestore, add to
+  // Pass treeview to function, create treestore, add to
   // treeview
   create_tree_view(treeview);
 
