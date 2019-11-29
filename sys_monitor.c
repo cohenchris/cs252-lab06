@@ -394,11 +394,13 @@ int main(int argc, char **argv) {
   GtkApplication *app;
   int status;
 
-  /*for (int i = 0; i < 4; i++) {
+  /*
+  for (int i = 0; i < 4; i++) {
     get_proc_info();
     printf("NUM: %d\n", g_num_procs);
   }
-  exit(0);*/
+  exit(0);
+  */
 
   g_sys_info_struct = get_system_info();
 

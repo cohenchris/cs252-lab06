@@ -251,6 +251,15 @@ void read_status_file(process_info * new_proc, char * proc_dir_path) {
  */
 
 process_info * get_proc_info() {
+  /* reset global process stuff so a new, updated process list is returned every
+   * time, rather than the new process list being appended onto the end of the
+   * old one.
+   */
+
+  free(g_proc_info);
+  g_proc_info = NULL;
+  g_num_procs = 0;
+
   char * base_dir = "/proc";
   DIR * dir = opendir(base_dir);
   if (dir == NULL) {
