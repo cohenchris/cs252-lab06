@@ -1,8 +1,11 @@
 #include "sysinfo.h"
 #include "procinfo.h"
+#include "devices.h"
 
 #include <gtk/gtk.h>
 #include <pthread.h>
+
+#define G_SOURCE_FUNC(f) ((GSourceFunc) (void (*)(void)) (f))
 
 system_info g_sys_info_struct = { 0 };
 process_info *g_stack = NULL;
@@ -122,6 +125,33 @@ gint create_tree_view(GtkWidget *treeview) {
   return TRUE;
 }
 
+gint create_file_sys_tree_view(GtkWidget *treeview) {
+  // create Processes treeview and label
+  GtkTreeModel *model;
+  GtkTreeIter toplevel, child, iter;
+  GtkTreeStore *treestore = gtk_tree_store_new(6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+
+  // get device info
+  device_info *dev_info = get_device_info();
+  for (int i = 0; i < g_num_devices; i++) {
+   device_info dev = dev_info[i];   
+   gtk_tree_store_append(treestore, &toplevel, NULL);
+   gtk_tree_store_set(treestore, &toplevel,
+                    0, dev.device,
+                    1, dev.num_blocks,
+                    2, dev.used,
+                    3, dev.available,
+                    4, dev.use_percent,
+                    5, dev.mount_point,
+                    -1);
+  }
+  model = GTK_TREE_MODEL(treestore);
+  gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), model);
+  g_object_unref(model);
+  return TRUE;
+}
+
 void on_changed(GtkWidget *widget, gpointer label) {
   GtkTreeIter iter;
   GtkTreeModel *model;
@@ -129,10 +159,155 @@ void on_changed(GtkWidget *widget, gpointer label) {
 
   if (gtk_tree_selection_get_selected(
       GTK_TREE_SELECTION(widget), &model, &iter)) {
+    gtk_tree_model_get(model, &iter, 3, &value,  -1);
+    //printf("%s\n", value);
+  }
+}
 
+void stop_process (GtkWidget *menuitem, gpointer userdata) {
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *value;
+
+  if (gtk_tree_selection_get_selected(
+      GTK_TREE_SELECTION(userdata), &model, &iter)) {
     gtk_tree_model_get(model, &iter, 3, &value,  -1);
     printf("%s\n", value);
   }
+  g_print ("Stop process\n");
+}
+
+void continue_process (GtkWidget *menuitem, gpointer userdata) {
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *value;
+
+  if (gtk_tree_selection_get_selected(
+      GTK_TREE_SELECTION(userdata), &model, &iter)) {
+    gtk_tree_model_get(model, &iter, 3, &value,  -1);
+    printf("%s\n", value);
+  }
+  g_print ("Continue process\n");
+}
+
+void kill_process (GtkWidget *menuitem, gpointer userdata) {
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *value;
+
+  if (gtk_tree_selection_get_selected(
+      GTK_TREE_SELECTION(userdata), &model, &iter)) {
+    gtk_tree_model_get(model, &iter, 3, &value,  -1);
+    printf("%s\n", value);
+  }
+  g_print ("Kill process\n");
+}
+
+void memory_maps (GtkWidget *menuitem, gpointer userdata) {
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *value;
+
+  if (gtk_tree_selection_get_selected(
+      GTK_TREE_SELECTION(userdata), &model, &iter)) {
+    gtk_tree_model_get(model, &iter, 3, &value,  -1);
+    printf("%s\n", value);
+  }
+  g_print ("Memory maps\n");
+}
+
+void open_files (GtkWidget *menuitem, gpointer userdata) {
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *value;
+
+  if (gtk_tree_selection_get_selected(
+      GTK_TREE_SELECTION(userdata), &model, &iter)) {
+    gtk_tree_model_get(model, &iter, 3, &value,  -1);
+    printf("%s\n", value);
+  }
+  g_print ("Open files\n");
+}
+
+void view_popup_menu (GtkWidget *treeview, GdkEventButton *event, gpointer userdata) {
+  GtkWidget *menu, *menuitem;
+  GtkWidget *separator;
+
+  menu = gtk_menu_new();
+
+  // Create menu
+  menuitem = gtk_menu_item_new_with_label("Stop Process");
+  g_signal_connect(menuitem, "activate",
+                   (GCallback) stop_process, userdata);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
+  menuitem = gtk_menu_item_new_with_label("Continue Process");
+  g_signal_connect(menuitem, "activate",
+                   (GCallback) continue_process, userdata);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
+  // Add separator
+  separator = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), separator);
+ 
+  menuitem = gtk_menu_item_new_with_label("End Process");
+  //g_signal_connect(menuitem, "activate",
+  //                 (GCallback) stop_process, treeview);
+  gtk_widget_set_sensitive(menuitem, FALSE);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+  
+  menuitem = gtk_menu_item_new_with_label("Kill Process");
+  g_signal_connect(menuitem, "activate",
+                   (GCallback) kill_process, userdata);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
+  // Add separator
+  separator = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), separator);
+
+  menuitem = gtk_menu_item_new_with_label("Change priority");
+  //g_signal_connect(menuitem, "activate",
+  //                 (GCallback) stop_process, treeview);
+  gtk_widget_set_sensitive(menuitem, FALSE);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
+  // Add separator
+  separator = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), separator);
+  
+  menuitem = gtk_menu_item_new_with_label("Memory Maps");
+  g_signal_connect(menuitem, "activate",
+                   (GCallback) memory_maps, userdata);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
+  menuitem = gtk_menu_item_new_with_label("Open Files");
+  g_signal_connect(menuitem, "activate",
+                   (GCallback) open_files, userdata);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
+  // Add separator
+  separator = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), separator);
+
+  menuitem = gtk_menu_item_new_with_label("Properties");
+  //g_signal_connect(menuitem, "activate",
+  //                 (GCallback) stop_process, treeview);
+  gtk_widget_set_sensitive(menuitem, FALSE);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
+
+  gtk_widget_show_all(menu);
+
+  gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent*) event);
+}
+
+void view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event, gpointer userdata) {
+  g_print ("Click.\n");
+  view_popup_menu(treeview, event, userdata);
+}
+
+void view_onPopupMenu (GtkWidget *treeview, gpointer userdata) {
+  view_popup_menu(treeview, NULL, userdata);
 }
 
 static void activate(GtkApplication *app, gpointer user_data) {
@@ -358,8 +533,10 @@ static void activate(GtkApplication *app, gpointer user_data) {
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
 
   // Connect changed signal to on_changed signal handler
-  g_signal_connect(selection, "changed",
-      G_CALLBACK(on_changed), NULL);
+  //g_signal_connect(selection, "changed", G_CALLBACK(on_changed), NULL);
+  g_signal_connect(treeview, "button-press-event", (GCallback)
+      view_onButtonPressed, selection);
+  g_signal_connect(treeview, "popup-menu", (GCallback) view_onPopupMenu, NULL);
 
   // create scrollable window
   scroll_window = gtk_scrolled_window_new(NULL, NULL);
@@ -370,21 +547,94 @@ static void activate(GtkApplication *app, gpointer user_data) {
   // add page
   gtk_notebook_append_page(GTK_NOTEBOOK (notebook), scroll_window, label);
   
+  g_timeout_add_full(G_PRIORITY_DEFAULT, 5000,  G_SOURCE_FUNC(create_tree_view), treeview, NULL); 
+  
   // create Resources frame and label
   frame = gtk_frame_new(NULL);
   label = gtk_label_new("Resources");
 
   // add page
   gtk_notebook_append_page(GTK_NOTEBOOK (notebook), frame, label);
+ 
+  // create treeview for file systems page
+  treeview = gtk_tree_view_new();
 
-  // create File Systems frame and label
-  frame = gtk_frame_new(NULL);
+  col = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(col, "Device");
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), col);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(col, renderer,
+      "text", 0);
+
+  col = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(col, "Total");
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), col);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(col, renderer,
+      "text", 1);
+
+  col = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(col, "Used");
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), col);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(col, renderer,
+      "text", 2);
+
+  col = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(col, "Available");
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), col);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(col, renderer,
+      "text", 3);
+
+  col = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(col, "Usage %");
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), col);
+   
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(col, renderer,
+      "text", 4);
+ 
+  col = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(col, "Mount Point");
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), col);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(col, renderer,
+      "text", 5);
+
+  // Pass treeview to function, create treestore, add to
+  // treeview
+  create_file_sys_tree_view(treeview);
+
+  // Set selector
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
+
+  // Connect changed signal to on_changed signal handler
+  g_signal_connect(selection, "changed",
+      G_CALLBACK(on_changed), NULL);
+
+  // create scrollable window
+  scroll_window = gtk_scrolled_window_new(NULL, NULL);
+  gtk_container_add(GTK_CONTAINER (scroll_window), treeview);
+
+  // create File Systems label
   label = gtk_label_new("File Systems");
 
   // add pages
-  gtk_notebook_append_page(GTK_NOTEBOOK (notebook), frame, label);
+  gtk_notebook_append_page(GTK_NOTEBOOK (notebook), scroll_window, label);
   
-  g_timeout_add_full(G_PRIORITY_DEFAULT, 5000, create_tree_view, treeview, NULL);
   gtk_widget_show_all(window);
 }
 
@@ -394,7 +644,7 @@ int main(int argc, char **argv) {
 
   g_sys_info_struct = get_system_info();
 
-  app = gtk_application_new("org.gtk.example", G_APPLICATION_FLAGS_NONE);
+  app = gtk_application_new(NULL, G_APPLICATION_FLAGS_NONE);
   g_signal_connect(app, "activate", G_CALLBACK (activate), NULL);
   status = g_application_run(G_APPLICATION (app), argc, argv);
   g_object_unref(app);
