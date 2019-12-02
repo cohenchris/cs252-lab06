@@ -37,6 +37,7 @@ void get_cpu() {
   first_total = (user + nice + system + idle + iowait + irq + softirq);
   first_work = (user + nice + system);
   fclose(fp);
+  fp = NULL;
 
   sleep(1);
  
@@ -50,6 +51,7 @@ void get_cpu() {
   second_total = (user + nice + system + idle + iowait + irq + softirq);
   second_work = (user + nice + system);
   fclose(fp);
+  fp = NULL;
 
   whole_work = (second_work - first_work);
   whole_total = (second_total - first_total);
@@ -79,6 +81,7 @@ void get_mem() {
   used_mem = total_mem - free_mem;
   g_graph_info.mem_usage = used_mem;
   fclose(fp);
+  fp = NULL;
 }
 
 
@@ -106,6 +109,7 @@ void get_swap() {
   used_swap = total_swap - free_swap;
   g_graph_info.swap_usage = used_swap;
   fclose(fp);
+  fp = NULL;
 }
 
 
@@ -113,7 +117,6 @@ void get_network() {
   // get network usage
   g_graph_info.network_sent = 0;
   g_graph_info.network_recieved = 0;
-  //TODO: find network usage
   FILE *fp = NULL;
   long double sent = 0;
   long double recieved = 0;
