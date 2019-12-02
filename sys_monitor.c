@@ -119,9 +119,6 @@ gint create_tree_view(GtkWidget *treeview) {
   model = GTK_TREE_MODEL(treestore);
   gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), model);
   g_object_unref(model);
-
-  //free(proc_info);
-  //proc_info = NULL;
   return TRUE;
 }
 
@@ -280,8 +277,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
   // set tab position
   gtk_notebook_set_tab_pos(GTK_NOTEBOOK (notebook), GTK_POS_TOP);
 
-  // create System frame and label
-  //frame = gtk_frame_new(NULL);
+  // create grid
   grid = gtk_grid_new();
 
   // add system info
@@ -295,11 +291,13 @@ static void activate(GtkApplication *app, gpointer user_data) {
   text = gtk_label_new(sys_info);
   gtk_grid_attach(GTK_GRID (grid), text, 0, 0, 1, 1);
 
+  // create System label
   label = gtk_label_new("System");
 
-  // add page
+  // add System info page
   gtk_notebook_append_page(GTK_NOTEBOOK (notebook), grid, label);
   
+  // create treeview for processes page
   GtkTreeViewColumn *col;
   GtkCellRenderer *renderer;
   GtkWidget *treeview;
@@ -393,14 +391,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
 int main(int argc, char **argv) {
   GtkApplication *app;
   int status;
-
-  /*
-  for (int i = 0; i < 4; i++) {
-    get_proc_info();
-    printf("NUM: %d\n", g_num_procs);
-  }
-  exit(0);
-  */
 
   g_sys_info_struct = get_system_info();
 
