@@ -14,8 +14,6 @@ typedef struct {
   int cpu_round;
   int mem_round;
   int swap_round;
-  int network_sent_round;
-  int network_recieved_round;
 
 } graph_info;
 

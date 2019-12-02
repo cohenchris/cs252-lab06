@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -112,9 +113,7 @@ void get_swap() {
     fscanf(fp, "%*s %Lf %*s\n", &total_swap);
   }
   fscanf(fp, "%*s %Lf %*s\n", &total_swap);
-  printf("got total swap: %Lf\n", total_swap);
   fscanf(fp, "%*s %Lf %*s\n", &free_swap);
-  printf("got free swap: %Lf\n", free_swap);
   used_swap = total_swap - free_swap;
   g_graph_info.swap_usage = used_swap;
   fclose(fp);
@@ -132,18 +131,22 @@ void get_network() {
   long double sent = 0;
   long double recieved = 0;
   char line[1000];
+  char interface[100];
   fp = fopen("/proc/net/dev", "r");
   if (fp == NULL) {
     printf("error opening file in graphinfo\n");
     exit(0);
   }
   fscanf(fp, "%[^\n]\n", line);   // skip first two lines in /proc/net/dev
-  printf("read line <%s>\n", line);
   fscanf(fp, "%[^\n]\n", line);   // skip first two lines in /proc/net/dev
-  printf("read line <%s>\n", line);
-  fscanf(fp, "%*s %Lf %*s %*s %*s %*s %*s %*s %*s %Lf %[^\n]", &recieved, &sent, line);
-  g_graph_info.network_sent = sent;
-  g_graph_info.network_recieved = recieved;
+  
+  while (fscanf(fp, "%s %Lf %*s %*s %*s %*s %*s %*s %*s %Lf %[^\n]", interface, &recieved, &sent, line)) {
+    if (strcmp("eth0:", interface) == 0) {
+      break;
+    }
+  }
+  g_graph_info.network_sent = ceil(sent);
+  g_graph_info.network_recieved = ceil(recieved);
 
   fclose(fp);
   fp = NULL;
