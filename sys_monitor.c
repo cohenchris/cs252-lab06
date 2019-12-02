@@ -160,43 +160,155 @@ void on_changed(GtkWidget *widget, gpointer label) {
   if (gtk_tree_selection_get_selected(
       GTK_TREE_SELECTION(widget), &model, &iter)) {
     gtk_tree_model_get(model, &iter, 3, &value,  -1);
-    printf("%s\n", value);
+    //printf("%s\n", value);
   }
 }
 
-void view_popup_menu_onDoSomething (GtkWidget *menuitem, gpointer userdata) {
-  /* we passed the view as userdata when we connected the signal */
-  GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
+void stop_process (GtkWidget *menuitem, gpointer userdata) {
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *value;
 
-  g_print ("Do something!\n");
+  if (gtk_tree_selection_get_selected(
+      GTK_TREE_SELECTION(userdata), &model, &iter)) {
+    gtk_tree_model_get(model, &iter, 3, &value,  -1);
+    printf("%s\n", value);
+  }
+  g_print ("Stop process\n");
 }
 
+void continue_process (GtkWidget *menuitem, gpointer userdata) {
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *value;
+
+  if (gtk_tree_selection_get_selected(
+      GTK_TREE_SELECTION(userdata), &model, &iter)) {
+    gtk_tree_model_get(model, &iter, 3, &value,  -1);
+    printf("%s\n", value);
+  }
+  g_print ("Continue process\n");
+}
+
+void kill_process (GtkWidget *menuitem, gpointer userdata) {
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *value;
+
+  if (gtk_tree_selection_get_selected(
+      GTK_TREE_SELECTION(userdata), &model, &iter)) {
+    gtk_tree_model_get(model, &iter, 3, &value,  -1);
+    printf("%s\n", value);
+  }
+  g_print ("Kill process\n");
+}
+
+void memory_maps (GtkWidget *menuitem, gpointer userdata) {
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *value;
+
+  if (gtk_tree_selection_get_selected(
+      GTK_TREE_SELECTION(userdata), &model, &iter)) {
+    gtk_tree_model_get(model, &iter, 3, &value,  -1);
+    printf("%s\n", value);
+  }
+  g_print ("Memory maps\n");
+}
+
+void open_files (GtkWidget *menuitem, gpointer userdata) {
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *value;
+
+  if (gtk_tree_selection_get_selected(
+      GTK_TREE_SELECTION(userdata), &model, &iter)) {
+    gtk_tree_model_get(model, &iter, 3, &value,  -1);
+    printf("%s\n", value);
+  }
+  g_print ("Open files\n");
+}
 
 void view_popup_menu (GtkWidget *treeview, GdkEventButton *event, gpointer userdata) {
   GtkWidget *menu, *menuitem;
+  GtkWidget *separator;
 
   menu = gtk_menu_new();
 
-  menuitem = gtk_menu_item_new_with_label("Do something");
-
+  // Create menu
+  menuitem = gtk_menu_item_new_with_label("Stop Process");
   g_signal_connect(menuitem, "activate",
-                   (GCallback) view_popup_menu_onDoSomething, treeview);
+                   (GCallback) stop_process, userdata);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
 
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  menuitem = gtk_menu_item_new_with_label("Continue Process");
+  g_signal_connect(menuitem, "activate",
+                   (GCallback) continue_process, userdata);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
+  // Add separator
+  separator = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), separator);
+ 
+  menuitem = gtk_menu_item_new_with_label("End Process");
+  //g_signal_connect(menuitem, "activate",
+  //                 (GCallback) stop_process, treeview);
+  gtk_widget_set_sensitive(menuitem, FALSE);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+  
+  menuitem = gtk_menu_item_new_with_label("Kill Process");
+  g_signal_connect(menuitem, "activate",
+                   (GCallback) kill_process, userdata);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
+  // Add separator
+  separator = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), separator);
+
+  menuitem = gtk_menu_item_new_with_label("Change priority");
+  //g_signal_connect(menuitem, "activate",
+  //                 (GCallback) stop_process, treeview);
+  gtk_widget_set_sensitive(menuitem, FALSE);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
+  // Add separator
+  separator = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), separator);
+  
+  menuitem = gtk_menu_item_new_with_label("Memory Maps");
+  g_signal_connect(menuitem, "activate",
+                   (GCallback) memory_maps, userdata);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
+  menuitem = gtk_menu_item_new_with_label("Open Files");
+  g_signal_connect(menuitem, "activate",
+                   (GCallback) open_files, userdata);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
+  // Add separator
+  separator = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), separator);
+
+  menuitem = gtk_menu_item_new_with_label("Properties");
+  //g_signal_connect(menuitem, "activate",
+  //                 (GCallback) stop_process, treeview);
+  gtk_widget_set_sensitive(menuitem, FALSE);
+  gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
+
 
   gtk_widget_show_all(menu);
 
   gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent*) event);
-  //gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
-  //               (event != NULL) ? event->button : 0,
-  //               gdk_event_get_time((GdkEvent*)event));
 }
 
-gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event, gpointer userdata) {
-  g_print ("Single right click on the tree view.\n");
+void view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event, gpointer userdata) {
+  g_print ("Click.\n");
   view_popup_menu(treeview, event, userdata);
 }
 
+void view_onPopupMenu (GtkWidget *treeview, gpointer userdata) {
+  view_popup_menu(treeview, NULL, userdata);
+}
 
 static void activate(GtkApplication *app, gpointer user_data) {
   GtkWidget *window;
@@ -421,10 +533,10 @@ static void activate(GtkApplication *app, gpointer user_data) {
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
 
   // Connect changed signal to on_changed signal handler
-  /*g_signal_connect(selection, "changed",
-      G_CALLBACK(on_changed), NULL);*/
-  g_signal_connect(selection, "changed", G_CALLBACK (view_onButtonPressed), NULL);
-  //g_signal_connect(treeview, "popup-menu", (GCallback) view_onPopupMenu, NULL);
+  //g_signal_connect(selection, "changed", G_CALLBACK(on_changed), NULL);
+  g_signal_connect(treeview, "button-press-event", (GCallback)
+      view_onButtonPressed, selection);
+  g_signal_connect(treeview, "popup-menu", (GCallback) view_onPopupMenu, NULL);
 
   // create scrollable window
   scroll_window = gtk_scrolled_window_new(NULL, NULL);
