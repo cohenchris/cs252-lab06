@@ -1,9 +1,12 @@
 #include "sysinfo.h"
 #include "procinfo.h"
 #include "devices.h"
+#include "proc_actions.h"
 
 #include <gtk/gtk.h>
 #include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define G_SOURCE_FUNC(f) ((GSourceFunc) (void (*)(void)) (f))
 
@@ -173,8 +176,14 @@ void stop_process (GtkWidget *menuitem, gpointer userdata) {
       GTK_TREE_SELECTION(userdata), &model, &iter)) {
     gtk_tree_model_get(model, &iter, 3, &value,  -1);
     printf("%s\n", value);
+
+    char *endptr;
+    long pid = strtol(value, &endptr, 10); 
+    stop_proc(pid);
   }
-  g_print ("Stop process\n");
+  /*char *endptr;
+  long pid = strtol((gchar *) userdata, &endptr, 10);*/
+  g_print("stop process\n");
 }
 
 void continue_process (GtkWidget *menuitem, gpointer userdata) {
@@ -186,8 +195,12 @@ void continue_process (GtkWidget *menuitem, gpointer userdata) {
       GTK_TREE_SELECTION(userdata), &model, &iter)) {
     gtk_tree_model_get(model, &iter, 3, &value,  -1);
     printf("%s\n", value);
+
+    char *endptr;
+    long pid = strtol(value, &endptr, 10); 
+    continue_proc(pid);
   }
-  g_print ("Continue process\n");
+  g_print("continue process\n");
 }
 
 void kill_process (GtkWidget *menuitem, gpointer userdata) {
@@ -199,8 +212,12 @@ void kill_process (GtkWidget *menuitem, gpointer userdata) {
       GTK_TREE_SELECTION(userdata), &model, &iter)) {
     gtk_tree_model_get(model, &iter, 3, &value,  -1);
     printf("%s\n", value);
+
+    char *endptr;
+    long pid = strtol(value, &endptr, 10);
+    kill_proc(pid);
   }
-  g_print ("Kill process\n");
+  g_print("kill process\n");
 }
 
 void memory_maps (GtkWidget *menuitem, gpointer userdata) {
@@ -212,11 +229,15 @@ void memory_maps (GtkWidget *menuitem, gpointer userdata) {
       GTK_TREE_SELECTION(userdata), &model, &iter)) {
     gtk_tree_model_get(model, &iter, 3, &value,  -1);
     printf("%s\n", value);
+
+    char *endptr;
+    long pid = strtol(value, &endptr, 10);
+    list_mm(pid);
   }
-  g_print ("Memory maps\n");
+  g_print("list memory maps\n");
 }
 
-void open_files (GtkWidget *menuitem, gpointer userdata) {
+void open_file (GtkWidget *menuitem, gpointer userdata) {
   GtkTreeIter iter;
   GtkTreeModel *model;
   gchar *value;
@@ -225,8 +246,12 @@ void open_files (GtkWidget *menuitem, gpointer userdata) {
       GTK_TREE_SELECTION(userdata), &model, &iter)) {
     gtk_tree_model_get(model, &iter, 3, &value,  -1);
     printf("%s\n", value);
+    
+    char *endptr;
+    long pid = strtol(value, &endptr, 10);
+    list_open_files(pid);
   }
-  g_print ("Open files\n");
+  g_print("open files\n");
 }
 
 void view_popup_menu (GtkWidget *treeview, GdkEventButton *event, gpointer userdata) {
@@ -282,7 +307,7 @@ void view_popup_menu (GtkWidget *treeview, GdkEventButton *event, gpointer userd
 
   menuitem = gtk_menu_item_new_with_label("Open Files");
   g_signal_connect(menuitem, "activate",
-                   (GCallback) open_files, userdata);
+                   (GCallback) open_file, userdata);
   gtk_menu_shell_append(GTK_MENU_SHELL (menu), menuitem);
 
   // Add separator
@@ -531,6 +556,15 @@ static void activate(GtkApplication *app, gpointer user_data) {
   // Set selector
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
+  
+  /*GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *value;
+  if (gtk_tree_selection_get_selected(
+      GTK_TREE_SELECTION(selection), &model, &iter)) {
+    gtk_tree_model_get(model, &iter, 3, &value,  -1);
+    printf("value: %s\n", value);
+  }*/
 
   // Connect changed signal to on_changed signal handler
   //g_signal_connect(selection, "changed", G_CALLBACK(on_changed), NULL);
