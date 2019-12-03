@@ -1,4 +1,4 @@
-
+/*
 CC = gcc 
 
 all: graphit
@@ -13,7 +13,8 @@ graphit: gtkgraph.o main.o
 	$(CC) `gtk-config --libs` -g gtkgraph.o main.o -o graphit 
 
 clean: 
-	rm -f *.o graphit/*
+	rm -f *.o graphit
+        */
  * File: GtkGraph.c
  * Auth: Eric Harlow
  *
