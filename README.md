@@ -2,13 +2,13 @@
 CS252 System Monitor
 
 ### Team Members
+- Cora Chan
 - Chris Cohen
 - Camden Shields
-- Cora Chan
 
 ### Technologies Used
 - C
-- GTK+ 3
+- GTK+ 3.0
 
 -----
 
@@ -18,4 +18,4 @@ CS252 System Monitor
 - Detailed View
 - File System
 - Process-Specific Actions
-- Graphs
+- Graph Info
