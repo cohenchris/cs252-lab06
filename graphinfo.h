@@ -9,6 +9,12 @@ typedef struct {
   long double network_sent;
   long double network_recieved;
 
+  // rounded values to whole number 0 - 100
+
+  int cpu_round;
+  int mem_round;
+  int swap_round;
+
 } graph_info;
 
 void get_cpu();
