@@ -101,6 +101,9 @@ mmap_info * list_mm(pid_t pid) {
   fclose(mmap_fp);
   mmap_fp = NULL;
 
+  if (mem_map[0].addr == NULL) {
+    printf("Memory map not available.");
+  }
   return mem_map;
 } /* list_mm() */
 
